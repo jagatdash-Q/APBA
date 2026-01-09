@@ -1,0 +1,5 @@
+@font-face {
+    font-family: 'avenir';
+    src: url('avenir_roman-webfont.woff2') format('woff2'),
+         url('avenir_roman-webfont.woff') format('woff');
+}

@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'Montserrat', sans-serif;
+    src: local('Montserrat Regular'), url('Montserrat-Regular.ttf') format('ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+body {
+    font-family: 'Montserrat', sans-serif;
+}

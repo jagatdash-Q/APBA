@@ -1,0 +1,192 @@
+@font-face {
+  font-family: "Avenir";
+  src: url('../../font/avenir_roman-webfont.woff2') format('woff2'),
+      url('../../font/avenir_roman-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Avenir-Regular";
+  src: url('../../font/Avenir-Regular.woff2') format('woff2'),
+      url('../../font/Avenir-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Avenir-Light";
+  src: url('../../font/Avenir-Light.woff2') format('woff2'),
+      url('../../font/Avenir-Light.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Avenir-Book";
+  src: url('../font/Avenir-Book.woff2') format('woff2'),
+      url('../font/Avenir-Book.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Avenir-Medium";
+  src: url('../../font/Avenir-Medium.woff2') format('woff2'),
+      url('../../font/Avenir-Medium.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Avenir-Black";
+  src: url('../../font/Avenir-Black.woff2') format('woff2'),
+      url('../../font/Avenir-Black.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  --bs-font-avenir: "Avenir";
+  --bs-font-avenir-regular: "Avenir-Regular";
+  --bs-font-avenir-light: "Avenir-Light";
+  --bs-font-avenir-book: "Avenir-Book";
+  --bs-font-avenir-medium: "Avenir-Medium";
+  --bs-font-avenir-black: "Avenir-Black";
+}
+
+
+
+.multi-select-button-width{
+  width: 150px !important;
+}
+
+.warning-text-design{
+  font-weight: 600;
+  padding-left: 15px;
+}
+
+.confirmation_para{
+  padding-left: 30px;
+}
+.confirmation_content_design{
+  padding: 10px 0px;
+}
+
+.nav-collapse{
+  position: relative;
+}
+
+.dismiss-btn-design{
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #6cc788;
+}
+
+.bellbtn {
+  position: absolute;
+  top: 22px;
+  right: 80px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.notification-count {
+  height: 22px;
+  width: 22px;
+  text-align: center;
+  background-color: #000000;
+  border: 2px solid #fff;
+  border-radius: 20px;
+  color: white;
+  text-align: center;
+  position: absolute;
+  top: 9px;
+  right: 65px;
+  font-size: 11px;
+  line-height: 17px;
+  z-index: 999;
+}
+
+  .dropdown-content-notification {
+  display: none;
+  position: absolute;
+  top: 42px;
+  right: 80px;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content-notification a {
+  color: black;
+  padding: 05px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content-notification a:hover {background-color: #ddd;}
+.dropdown:hover .dropdown-content-notification {display: block;}
+
+/* .dropdown:hover .dropbtn {background-color: #3e8e41;} */
+
+.fieldset-design {
+  margin: 10px 20px 10px 20px !important;
+  padding: 10px !important;
+  /* opacity: 0.5; */
+  border: 1px solid rgba(0, 0, 0, .4) !important;
+
+}
+
+.fieldset-legend {
+  display: inline-block !important;
+  width: auto !important;
+  font-size: 1.2rem;
+}
+
+.input_image_sec_1 {
+  width: 80% !important;
+  float: left !important
+}
+
+.input_image_sec_2 {
+  width: 18% !important;
+  float: right !important
+}
+
+
+.sweet-alert h2 {
+color: #575757 !important;
+font-size: 16px !important;
+text-align: center;
+font-weight: 600;
+text-transform: none;
+position: relative;
+margin: 5px 0 !important;
+padding: 0;
+line-height: 25px !important;
+display: block;
+
+font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.sweet-alert button{
+margin: 5px 5px 0 5px !important;
+padding: 6px 24px !important;
+}
+
+
+  .modal-xl {
+    max-width: 1140px;
+  }
+
+  #showsModal {
+    z-index: 9999;
+  }
+  #showsModal .modal-header{
+    border-bottom: 0px !important;
+  }

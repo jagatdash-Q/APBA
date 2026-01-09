@@ -1,0 +1,273 @@
+.custom-th {
+    vertical-align: middle !important;
+    padding: 8px !important;
+    font-size: small !important;
+    word-wrap: break-word !important;
+}
+
+.custom-td {
+    vertical-align: middle !important;
+    padding: 7px !important;
+    font-size: small !important;
+    word-wrap: break-word !important;
+}
+
+.disp-inline {
+    display: inline !important;
+}
+
+fieldset {
+    border: 1px solid #ddd !important;
+    padding: 15px !important;
+    position: relative;
+    border-radius: 4px;
+    margin: 10px !important;
+}
+
+legend {
+    padding: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    line-height: inherit;
+    color: inherit;
+    white-space: normal;
+    display: inline-block !important;
+    width: auto !important;
+}
+
+.disp-none {
+    display: none;
+}
+
+.form-check-input {
+    min-height: 0px !important;
+}
+
+.nav-img-prev.active {
+    color: #4e73df
+}
+
+.nav-img-prev {
+    color: black
+}
+
+.box_full {
+    z-index: 9999;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.image_prev_container {
+    background: #f0f0f0
+}
+
+#image_preview_container {
+    background: #f0f0f0;
+}
+
+.trasparent-btn-white {
+    background: transparent;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid #ffffff;
+    border-radius: 8px;
+    width: 146px;
+    height: 45px;
+    padding: 0;
+    outline: none;
+    overflow: hidden;
+    color: #ffffff;
+    transition: color 0.3s 0.1s ease-out;
+    text-align: center;
+    line-height: 40px;
+    z-index: 0;
+    font-size: 17px;
+}
+
+.banner-text-lg {
+    font-size: 50px;
+    line-height: 79px;
+    /* font-size: 36px;
+     line-height: 57.5px; */
+    font-family: var(--bs-font-avenir-black);
+}
+
+.banner-description-lg {
+    font-size: 25px;
+    line-height: 35px;
+    max-width: 912px;
+    text-align: center;
+    /* font-size: 18px;
+   line-height: 25px; */
+    font-family: var(--bs-font-avenir-light);
+}
+
+.banner-text-md {
+    font-size: 40px;
+    line-height: 64px;
+    font-family: var(--bs-font-avenir-black);
+}
+
+.banner-description-md {
+    font-size: 20px;
+    line-height: 28px;
+    max-width: 530px;
+    text-align: center;
+    font-family: var(--bs-font-avenir-light);
+}
+
+.banner-text-sm {
+    font-size: 30px;
+    line-height: 35px;
+    font-family: var(--bs-font-avenir-black);
+}
+
+.banner-description-sm {
+    font-size: 15px;
+    line-height: 25px;
+    max-width: 329px;
+    text-align: center;
+    letter-spacing: 0.3px;
+    font-family: var(--bs-font-avenir-light);
+}
+
+.select2-container {
+    display: block !important;
+}
+
+
+
+/* Table design for dynamic section of about page*/
+
+#section_3_card_container table,
+#section_1_card_container table {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+#section_3_card_container table,
+#section_1_card_container table,
+th,
+td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#section_3_card_container table,
+#section_1_card_container table,
+th,
+td {
+    padding: 10px;
+
+}
+
+#section_3_card_container th,
+#section_1_card_container th {
+    background-color: #FDDF95;
+}
+
+/* Table design for dynamic section of about page completed*/
+
+
+
+/* Pagination link design */
+
+
+.pager li {
+	display: inline-block;
+	background: #fff;
+	color: #4e73df;
+	border: 1px solid #4e73df;
+	min-width: 30px;
+	text-align: center;
+	border-radius: 5px;
+	padding: 5px;
+}
+.pager .active{
+	background: #4e73df !important;
+	color: #fff !important;
+}
+.item-menus span{
+	display: contents;
+}
+.item-menus .sl{
+	color: #4e73df;
+    font-weight: bolder;
+    margin-right: 5px;
+}
+
+/* Pagination link design ends*/
+
+
+
+/* Workshop program section */
+
+.workshop_program_details {
+    /* border: 1px solid black;
+                            border-radius: 10px; */
+    padding: 10px;
+}
+
+.workshop_program_details_section {
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.add-more-btn{
+    padding: 10px;
+    border: 1px solid gray;
+    border-radius: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+/* Workshop program section ends */
+
+
+/* Event gallery section */
+
+.close-img {
+    display: inline-block;
+    margin-left: -17px;
+    margin-bottom: 40px;
+    width: 30px;
+    height: 29px;
+    background: url(../images/close.png) no-repeat center center;
+}
+.close-img:hover{
+    cursor: pointer;
+}
+
+/* Event gallery section ends*/
+
+
+/* Membership section */
+
+.membership-sec{
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+
+
+
+/* Home page section */
+
+.input-error{
+    border-color: red;    
+}
+.input-success {
+    border-color: green;    
+}
+
+.action-td{
+    display: flex;
+    justify-content: center;
+}

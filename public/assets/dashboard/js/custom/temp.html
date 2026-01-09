@@ -1,0 +1,27 @@
+<div class="tab-pane   ${active_tab}" id="tab_${i+1}">
+    <div class="box-body" id="media-box-body_${language_list[i].language.code}">
+        <div class="common">
+            <div class="form-group row">
+                <div class="col-sm-2">
+                     <label class="form-control-label">
+                        Title </label>
+                </div>
+                <div class="col-sm-10">
+                    <input type="text" placeholder="" class="form-control"
+                        name="content_title_${language_list[i].language.code}"
+                        id="content_title_${language_list[i].language.code}" type="text" value="">
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-2">
+                    <label class="form-control-label"> Link </label>
+                </div>
+                <div class="col-sm-10">
+                    <input type="text" placeholder="" class="form-control"
+                        name="content_link_${language_list[i].language.code}"
+                        id="content_link_${language_list[i].language.code}" type="text" value="">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

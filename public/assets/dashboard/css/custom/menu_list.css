@@ -1,0 +1,11 @@
+table th, table td
+{
+    width: 100px;
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+.selected
+{
+    background-color: #666;
+    color: #fff;
+}

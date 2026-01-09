@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1366" height="768" viewBox="0 0 1366 768">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rectangle_6498" data-name="Rectangle 6498" width="1366" height="768" fill="#fff" stroke="#707070" stroke-width="1"/>
+    </clipPath>
+    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#00b0b5"/>
+      <stop offset="1" stop-color="#015599"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#02b0b5"/>
+      <stop offset="1" stop-color="#015599"/>
+    </linearGradient>
+    <clipPath id="clip-path-2">
+      <rect id="Rectangle_4701" data-name="Rectangle 4701" width="1378.036" height="304.609" fill="none"/>
+    </clipPath>
+    <clipPath id="clip-path-3">
+      <rect id="Rectangle_4698" data-name="Rectangle 4698" width="1378.036" height="304.607" fill="none"/>
+    </clipPath>
+    <clipPath id="clip-path-4">
+      <rect id="Rectangle_4697" data-name="Rectangle 4697" width="698.893" height="279.279" fill="none"/>
+    </clipPath>
+    <clipPath id="clip-path-6">
+      <rect id="Rectangle_4699" data-name="Rectangle 4699" width="738.771" height="279.279" fill="none"/>
+    </clipPath>
+    <filter id="Path_14413" x="-75" y="663" width="1516" height="199.174" filterUnits="userSpaceOnUse">
+      <feOffset dy="-30" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="25" result="blur"/>
+      <feFlood flood-color="#059" flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Mask_Group_12" data-name="Mask Group 12" clip-path="url(#clip-path)">
+    <g id="Group_15249" data-name="Group 15249" transform="translate(606.638 995.392) rotate(-60)" opacity="0.3" style="mix-blend-mode: normal;isolation: isolate">
+      <circle id="Ellipse_98" data-name="Ellipse 98" cx="431.5" cy="431.5" r="431.5" transform="translate(680.13 49.995)" opacity="0.21" fill="url(#linear-gradient)" style="mix-blend-mode: overlay;isolation: isolate"/>
+      <ellipse id="Ellipse_99" data-name="Ellipse 99" cx="351.5" cy="342.5" rx="351.5" ry="342.5" transform="translate(760.13 139.995)" opacity="0.23" fill="url(#linear-gradient)" style="mix-blend-mode: overlay;isolation: isolate"/>
+      <ellipse id="Ellipse_100" data-name="Ellipse 100" cx="261.5" cy="261" rx="261.5" ry="261" transform="translate(850.13 220.995)" opacity="0.15" fill="url(#linear-gradient-3)" style="mix-blend-mode: overlay;isolation: isolate"/>
+    </g>
+    <g id="Group_15250" data-name="Group 15250" transform="translate(-853.38 1094.094) rotate(-60)" opacity="0.3" style="mix-blend-mode: normal;isolation: isolate">
+      <circle id="Ellipse_98-2" data-name="Ellipse 98" cx="306.043" cy="306.043" r="306.043" transform="translate(680.13 49.995)" opacity="0.21" fill="url(#linear-gradient)" style="mix-blend-mode: overlay;isolation: isolate"/>
+      <ellipse id="Ellipse_99-2" data-name="Ellipse 99" cx="249.302" cy="242.919" rx="249.302" ry="242.919" transform="translate(736.87 113.828)" opacity="0.23" fill="url(#linear-gradient)" style="mix-blend-mode: overlay;isolation: isolate"/>
+      <ellipse id="Ellipse_100-2" data-name="Ellipse 100" cx="185.47" cy="185.115" rx="185.47" ry="185.115" transform="translate(800.703 171.277)" opacity="0.15" fill="url(#linear-gradient-3)" style="mix-blend-mode: overlay;isolation: isolate"/>
+    </g>
+    <!-- 
+     -->
+  </g>
+</svg>

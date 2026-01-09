@@ -1,0 +1,91 @@
+const submitForm = () => {
+    // e.preventDefault();
+    let region_id = $('#region_id').find(":selected").val();
+    $("#nav_menus").empty();
+    $('#tab-content').empty();
+    const base_url = $('#base_url').val();
+
+
+    $.ajax({
+        url: `${base_url}/admin/get-language-by-country?region_id=${region_id}`,
+        contentType: false,
+        processData: false,
+        type: 'GET',
+        success: function(data) {
+            if (data.includes('success')) {
+                // update the form with the region selected
+                $('#input_region_id').val(region_id);
+                $('#content_div').css("display", 'block');
+                const language_list = JSON.parse(data).language_list;
+                console.log(language_list);
+                var fieldHTML = ``;
+                let tab_content = ``;
+                let langs = [];
+
+                for (i = 0; i < language_list.length; i++) {
+                    let default_lang = language_list[i].language.id == language_list[i].region
+                        .default_lang ? 'required' : '';
+                    let active_tab = language_list[i].language.id == language_list[i].region
+                        .default_lang ? 'active' : '';
+
+                    fieldHTML +=
+                        ` <li class="nav-item inline">
+            <a class="nav-link  ${active_tab}" href="" data-toggle="tab" data-target="#tab_details${i+1}">   <span class="text-md"><span class="label light text-dark lang-label"><img src="${base_url}/assets/dashboard/images/flags/${language_list[i].language.icon}.svg" alt=""> <small>${language_list[i].language.title}</small></span></span>  </a> </li>`;
+
+                    tab_content += ` <div class="tab-pane  ${active_tab}" id="tab_details${i+1}"> <div class="box-body"> <div class="form-group row"> <label class="col-sm-2 form-control-label">Title </label>  <div class="col-sm-8">  <input placeholder="" class="form-control" ${default_lang}   dir="${language_list[i].language.direction}" name="title_${language_list[i].language.code}" id="title_${language_list[i].language.code}" type="text" value="">  </div> </div> <div id="section_1_${language_list[i].language.code}"><div class="form-group row"> <label class="col-sm-2 form-control-label">Section - 1 Title </label>  <div class="col-sm-8">  <input placeholder="" class="form-control" ${default_lang}   dir="${language_list[i].language.direction}" name="section_1_job_desc_${language_list[i].language.code}" id="section_1_job_desc_${language_list[i].language.code}" type="text" value="">   </div> </div> <div class="form-group row"> <label class="col-sm-2 form-control-label">Section - 1 Desc - 1  </label>  <div class="col-sm-8 ">  <textarea class="form-control" ${default_lang}   dir="${language_list[i].language.direction}" name="section_1_job_desc_body_1_${language_list[i].language.code}" id="section_1_job_desc_body_1_${language_list[i].language.code}"> </textarea>  </div> <div class="col-sm-2"> <button type="button" class="btn btn-primary" onclick="add_new_section('section_1_${language_list[i].language.code}','${language_list[i].language.code}','${language_list[i].language.direction}')" > + Add </button> </div></div> </div>  <div id="section_2_${language_list[i].language.code}"><div class="form-group row"> <label class="col-sm-2 form-control-label">Section - 2 Title </label>  <div class="col-sm-8">  <input placeholder="" class="form-control" ${default_lang}   dir="${language_list[i].language.direction}" name="section_2_job_desc_${language_list[i].language.code}" id="section_2_job_desc_${language_list[i].language.code}" type="text" value="">   </div> </div> <div class="form-group row"> <label class="col-sm-2 form-control-label">Section - 2 Desc - 1  </label>  <div class="col-sm-8 ">  <textarea class="form-control" ${default_lang}   dir="${language_list[i].language.direction}" name="section_2_job_desc_body_1_${language_list[i].language.code}" id="section_2_job_desc_body_1_${language_list[i].language.code}"> </textarea>  </div> <div class="col-sm-2"> <button type="button" class="btn btn-primary" onclick="add_new_section('section_2_${language_list[i].language.code}','${language_list[i].language.code}','${language_list[i].language.direction}')" > + Add </button> </div></div></div>  <div id="section_3_${language_list[i].language.code}"><div class="form-group row"> <label class="col-sm-2 form-control-label">Section - 3 Title </label>  <div class="col-sm-8">  <input placeholder="" class="form-control" ${default_lang}   dir="${language_list[i].language.direction}" name="section_3_job_desc_${language_list[i].language.code}" id="section_3_job_desc_${language_list[i].language.code}" type="text" value="">   </div> </div> <div class="form-group row"> <label class="col-sm-2 form-control-label">Section - 3 Desc - 1  </label>  <div class="col-sm-8 ">  <textarea class="form-control" ${default_lang}   dir="${language_list[i].language.direction}" name="section_3_job_desc_body_1_${language_list[i].language.code}" id="section_3_job_desc_body_1_${language_list[i].language.code}"> </textarea>  </div> <div class="col-sm-2"> <button type="button" class="btn btn-primary" onclick="add_new_section('section_3_${language_list[i].language.code}','${language_list[i].language.code}','${language_list[i].language.direction}')" > + Add </button> </div></div></div> <div id="section_4_${language_list[i].language.code}"><div class="form-group row"> <label class="col-sm-2 form-control-label"> User info </label>  <div class="col-sm-8">  <textarea class="form-control" ${default_lang}   dir="${language_list[i].language.direction}" name="interested_candidate_desc_${language_list[i].language.code}" id="interested_candidate_desc_${language_list[i].language.code}" type="text" value="" class="ckeditor"> </textarea>   </div> </div> </div> </div> </div>  </div>  `;
+                    langs.push(language_list[i].language.code);
+                }
+
+                tab_content +=
+                    `<div class="form-group row"> <div class="col-sm-10"> </div> <div class="col-sm-2">  <button class="btn btn-primary" type="submit" name="draft" value="draft"> Draft </button>  <button class="btn btn-success" type="submit" name="submit" value="submit"> Submit </button> </div>`;
+
+                $('#nav_menus').append(fieldHTML);
+                $('#tab-content').append(tab_content);
+
+                // console.log(language_ids);
+                langs.forEach((item, index) => {
+                    // console.log(item)
+                    CKEDITOR.replace('interested_candidate_desc_' + item);
+                });
+            }
+            if (data.includes('error')) {
+                alert("error");
+            }
+
+
+        },
+        error: function(data) {
+            console.log(data);
+        }
+
+    });
+}
+
+const add_new_section = (section_id, language_code, direction_write) => {
+    console.log(section_id);
+    var ele = document.querySelectorAll(`#${section_id} textarea`);
+    console.log(ele);
+    console.log(ele[ele.length - 1]);
+    let last_element = ele[ele.length - 1].name;
+    let next_element = last_element.substr(0, 24) + (Number(last_element.substr(24, last_element.length - 27)) +
+        1) + last_element.substr(last_element.length - 3, last_element.length);
+
+    let div_content_ids = Number(last_element.substr(24, last_element.length - 27)) + 1;
+    let section_no = section_id.substr(8, 1);
+    let section_prefix = section_id.substr(0, 10);
+
+    console.log(last_element);
+    console.log(next_element)
+    //         $("<img/>", {
+    //   src:  "img/loading.gif",
+    //   id:   "loading_img"
+    // }).insertAfter($("section_1").find("input:last"));
+    $(`#${section_id}`).append(
+        `<div class="form-group row" id="${next_element}_div"> <label class="col-sm-2 form-control-label">Section - ${section_no} Desc - ${div_content_ids}  </label>  <div class="col-sm-8 ">  <textarea class="form-control"  dir="${direction_write}" name="${next_element}" id="${next_element}"> </textarea>  </div>  <div class="col-sm-2"> <button class="btn btn-danger" onclick="delete_section('${next_element}_div')" >  Delete </button> </div> </div> `
+        )
+}
+
+// const delete_section = (div_id) => {
+//     console.log(div_id);
+//     $(`#${div_id}`).remove();
+// }

@@ -22,8 +22,9 @@ class HomePageController extends Controller
     use Common;
     public function createSlider(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-create'))
+        if (!Auth::user()->hasPermission('content_management-create')) {
             return ['status' => 'error', 'message' => 'Access Denied!'];
+        }
 
         // Check if home page created or not
         $home_content_uuid = '';
@@ -56,8 +57,9 @@ class HomePageController extends Controller
 
     public function updateSlider(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-update'))
+        if (!Auth::user()->hasPermission('content_management-update')) {
             return ['status' => 'error', 'message' => 'Access Denied!'];
+        }
         try {
             $home_content_uuid = '';
             if ($request->has('home_content_uuid')) {
@@ -86,8 +88,9 @@ class HomePageController extends Controller
 
     public function createCard(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-create'))
+        if (!Auth::user()->hasPermission('content_management-create')) {
             return ['status' => 'error', 'message' => 'Access Denied!'];
+        }
         // Check if home page created or not
         $home_content_uuid = '';
         if ($request->has('home_content_uuid')) {
@@ -120,8 +123,9 @@ class HomePageController extends Controller
 
     public function updateCard(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-update'))
+        if (!Auth::user()->hasPermission('content_management-update')) {
             return ['status' => 'error', 'message' => 'Access Denied!'];
+        }
         try {
             $home_content_uuid = '';
             if ($request->has('home_content_uuid')) {
@@ -151,8 +155,9 @@ class HomePageController extends Controller
 
     public function createPartner(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-create'))
+        if (!Auth::user()->hasPermission('content_management-create')) {
             return ['status' => 'error', 'message' => 'Access Denied!'];
+        }
         // Check if home page created or not
         $home_content_uuid = '';
         if ($request->has('home_content_uuid')) {
@@ -183,8 +188,9 @@ class HomePageController extends Controller
 
     public function updatePartner(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-update'))
+        if (!Auth::user()->hasPermission('content_management-update')) {
             return ['status' => 'error', 'message' => 'Access Denied!'];
+        }
         try {
             $home_content_uuid = '';
             if ($request->has('home_content_uuid')) {
@@ -213,8 +219,9 @@ class HomePageController extends Controller
 
     public function createFinalSectionCard(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-create'))
+        if (!Auth::user()->hasPermission('content_management-create')) {
             return ['status' => 'error', 'message' => 'Access Denied!'];
+        }
         // Check if home page created or not
         $home_content_uuid = '';
         if ($request->has('home_content_uuid')) {
@@ -247,8 +254,9 @@ class HomePageController extends Controller
 
     public function updateFinalSectionCard(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-update'))
+        if (!Auth::user()->hasPermission('content_management-update')) {
             return ['status' => 'error', 'message' => 'Access Denied!'];
+        }
         try {
             $home_content_uuid = '';
             if ($request->has('home_content_uuid')) {
@@ -280,8 +288,9 @@ class HomePageController extends Controller
 
     public function editHomeSections(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-update'))
+        if (!Auth::user()->hasPermission('content_management-update')) {
             return ['status' => 'error', 'message' => 'Access Denied!'];
+        }
         if ($request->section == 'home_slider') {
             $is_slider_exist =  HomeSliderContent::whereId($request->id)->first();
             if ($is_slider_exist == null) {
@@ -318,8 +327,9 @@ class HomePageController extends Controller
     // Delete function for every dynamic card section
     public function deleteHomeSections(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-delete'))
+        if (!Auth::user()->hasPermission('content_management-delete')) {
             return ['status' => 'error', 'message' => 'Access Denied!'];
+        }
         if ($request->section == 'home_slider') {
             try {
                 $is_slider_exist = HomeSliderContent::whereId($request->id)->first();
@@ -345,7 +355,7 @@ class HomePageController extends Controller
                 Log::info('Home slider create error :-' . $e->getMessage());
                 return ['status' => 'error', 'message' => 'Something went wrong , Please try after sometime'];
             }
-        } else if ($request->section == 'home_card') {
+        } elseif ($request->section == 'home_card') {
             try {
                 $is_card_exist = HomeFirstSectionCard::whereId($request->id)->first();
                 $home_content_uuid = '';
@@ -370,7 +380,7 @@ class HomePageController extends Controller
                 Log::info('Home slider create error :-' . $e->getMessage());
                 return ['status' => 'error', 'message' => 'Something went wrong , Please try after sometime'];
             }
-        } else if ($request->section == 'home_partner') {
+        } elseif ($request->section == 'home_partner') {
             try {
                 $is_partner_exist = HomePartnerSection::whereId($request->id)->first();
                 $home_content_uuid = '';
@@ -476,8 +486,9 @@ class HomePageController extends Controller
 
     public function createHomePage(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-create'))
+        if (!Auth::user()->hasPermission('content_management-create')) {
             abort(403);
+        }
         if (Content::where('template_type', 'home')->where('content_status', '1')->count()) {
             return redirect()->route('admin.contents.manage')->with('errorMessage', 'Home page has been created');
         } else {
@@ -549,8 +560,9 @@ class HomePageController extends Controller
 
     public function updateHomePage(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-update'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-update')) {
+            abort(403);
+        }
         try {
             $is_home_update = HomeContent::where('uuid', $request->home_content_uuid)->update([
                 'content_id' => $request->content_id,
@@ -586,13 +598,14 @@ class HomePageController extends Controller
 
     public function editHomePage(Request $request, $id)
     {
-        if (!Auth::user()->hasPermission('content_management-update'))
+        if (!Auth::user()->hasPermission('content_management-update')) {
             abort(403);
+        }
         $is_content_exist = Content::whereId($id)->first();
         if ($is_content_exist != null) {
             $home = HomeContent::where('content_id', $is_content_exist->id)->with(['getBannerImageWeb', 'getBannerImageTab', 'getBannerImageMobile', 'getfirstSectionfirstImage', 'getfirstSectionsecondImage', 'getSliders', 'getFirstSectionCards', 'getFinalSectionCards', 'getPartners'])->first();
             if ($home != null) {
-                return view('dashboard.content-manager.home.edit', compact('home'));
+                return view('dashboard.content-manager.home.edit', ['home' => $home]);
             } else {
                 abort(404);
             }

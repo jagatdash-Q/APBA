@@ -26,8 +26,7 @@ class Helper
         $format = env("DATE_FORMAT", "Y-m-d");
         $format = str_replace("Y", "YYYY", $format);
         $format = str_replace("m", "MM", $format);
-        $format = str_replace("d", "DD", $format);
-        return $format;
+        return str_replace("d", "DD", $format);
     }
 
     public static function getMediaUid($file_name)
@@ -79,9 +78,10 @@ class Helper
     {
         $start_date_month = Carbon::parse($start_date)->format('F');
         $end_date_month = Carbon::parse($end_date)->format('F');
-        if ($start_date_month == $end_date_month) {
-            if ($start_date == $end_date)
+        if ($start_date_month === $end_date_month) {
+            if ($start_date == $end_date) {
                 return Carbon::parse($end_date)->format('d F Y');
+            }
             return Carbon::parse($start_date)->format('d') . ' - ' . Carbon::parse($end_date)->format('d F Y');
         } else {
             return Carbon::parse($start_date)->format('d F Y') . ' - ' . Carbon::parse($end_date)->format('d F Y');
@@ -90,10 +90,7 @@ class Helper
     public static function removeStyleTag($story_desc)
     {
         $story_desc = explode('</style>', $story_desc);
-        if (isset($story_desc[1]))
-            $story_desc = strip_tags($story_desc[1]);
-        else
-            $story_desc = strip_tags($story_desc[0]);
+        $story_desc = isset($story_desc[1]) ? strip_tags($story_desc[1]) : strip_tags($story_desc[0]);
 
         return Str::limit($story_desc, 150);
     }

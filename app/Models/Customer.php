@@ -10,6 +10,29 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * Class Customer
+ *
+ * @property int $id
+ * @property string $first_name
+ * @property string $last_name
+ * @property string $email
+ * @property string|null $mobile
+ * @property string|null $address
+ * @property string|null $city
+ * @property string|null $state
+ * @property string|null $country
+ * @property string|null $postcode
+ * @property string|null $company
+ * @property string|null $role
+ * @property string|null $title
+ * @property string|null $password
+ * @property bool $is_active
+ * @property string|null $active_subscription_expired_on
+ * @property string|null $subscription_expired_on
+ * @property-read \App\Models\MembershipPackage|null $getActiveSubscriptionDetails
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CustomerSubscription[] $getSubscriptionHistory
+ */
 class Customer extends Authenticatable
 {
     use HasFactory, SoftDeletes, Notifiable;

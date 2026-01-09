@@ -1,0 +1,21 @@
+includes:
+  - vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+  level: 7
+  paths:
+    - app
+    - routes
+    - database
+    - config
+  scanFiles:
+    - artisan
+    - bootstrap/app.php
+  stubFiles:
+    - stubs/external_classes.php
+    - stubs/faker_methods.stubs
+    - stubs/database_factories.stub.php
+  excludePaths:
+    - vendor
+    - storage
+    - database/migrations

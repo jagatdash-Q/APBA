@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @method static \Database\Factories\ResourceMenuFactory factory(...$parameters)
+ */
 class ResourceMenu extends Model
 {
     use HasFactory, SoftDeletes;

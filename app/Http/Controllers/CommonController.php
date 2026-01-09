@@ -27,7 +27,6 @@ class CommonController extends Controller
 
         $CKEditorFuncNum = $request->input('CKEditorFuncNum');
         $url = asset('uploads/ckeditor_images/' . $fileName);
-        $msg = 'Image uploaded successfully';
         $response = "<script>window.parent.CKEDITOR.tools.callFunction($CKEditorFuncNum, '$url')</script>";
 
         @header('Content-type: text/html; charset=utf-8');

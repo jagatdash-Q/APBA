@@ -21,45 +21,51 @@ class EventSurveyCertificateController extends Controller
     use Common;
     public function dashboard(Request $request)
     {
-        if (!Auth::user()->hasPermission('event_management-read'))
+        if (!Auth::user()->hasPermission('event_management-read')) {
             abort(403);
+        }
         $all_survey_list = SurveyActivity::get();
         $survey_list = SurveyActivity::query();
-        if (!$request->has('restore')) {
-            if ($request->has('filter')) {
-                if ($request->uuid != null)
-                    $survey_list = $survey_list->where('uuid', $request->uuid);
+        if (!$request->has('restore') && $request->has('filter')) {
+            if ($request->uuid != null) {
+                $survey_list = $survey_list->where('uuid', $request->uuid);
             }
         }
         $survey_list = $survey_list->with('getEventProgram', 'getSurveyRegistration', 'getEventOptional')->orderBy('id', 'desc')->get();
-        return view('dashboard.event-manager.survey-certificate.dashboard', compact('survey_list', 'all_survey_list'));
+        return view('dashboard.event-manager.survey-certificate.dashboard', ['survey_list' => $survey_list, 'all_survey_list' => $all_survey_list]);
     }
     public function viewSurvey($uuid)
     {
-        if (!Auth::user()->hasPermission('event_management-read'))
+        if (!Auth::user()->hasPermission('event_management-read')) {
             abort(403);
+        }
         $survey_list = SurveyActivity::where('uuid', $uuid)->with('getEventProgram', 'getSurveyRegistration')->first();
-        if ($survey_list == null)
+        if ($survey_list == null) {
             abort(404);
-        return view('dashboard.event-manager.survey-certificate.view-survey', compact('survey_list'));
+        }
+        return view('dashboard.event-manager.survey-certificate.view-survey', ['survey_list' => $survey_list]);
     }
     public function editSurvey($uuid)
     {
-        if (!Auth::user()->hasPermission('event_management-update'))
+        if (!Auth::user()->hasPermission('event_management-update')) {
             abort(403);
+        }
         $survey_reg = SurveyRegistration::with('getSurveyActivity')->where('uuid', $uuid)->first();
-        if ($survey_reg == null)
+        if ($survey_reg == null) {
             abort(404);
-        return view('dashboard.event-manager.survey-certificate.edit-survey', compact('survey_reg'));
+        }
+        return view('dashboard.event-manager.survey-certificate.edit-survey', ['survey_reg' => $survey_reg]);
     }
     public function updateSurveyForm(Request $request)
     {
-        if (!Auth::user()->hasPermission('event_management-update'))
+        if (!Auth::user()->hasPermission('event_management-update')) {
             abort(403);
+        }
         try {
             $survey_reg = SurveyRegistration::where('uuid', $request->uuid)->first();
-            if ($survey_reg == null)
+            if ($survey_reg == null) {
                 abort(404);
+            }
             $survey_reg->fullname = $request->fullname;
             $survey_reg->organization = $request->organization;
             $survey_reg->email = $request->email;
@@ -80,25 +86,27 @@ class EventSurveyCertificateController extends Controller
     }
     public function exportSurvey(Request $request)
     {
-        if (!Auth::user()->hasPermission('event_management-read'))
+        if (!Auth::user()->hasPermission('event_management-read')) {
             abort(403);
+        }
         return Excel::download(new ExportSurvey($request->survey_uuid), 'survey.xlsx');
     }
     public function certificateAttributes(Request $request)
     {
-        if (!Auth::user()->hasPermission('event_management-read'))
+        if (!Auth::user()->hasPermission('event_management-read')) {
             abort(403);
+        }
         $certificate_attribute = CertificateAttribute::first();
-        return view('dashboard.event-manager.survey-certificate.certificate-attribute', compact('certificate_attribute'));
+        return view('dashboard.event-manager.survey-certificate.certificate-attribute', ['certificate_attribute' => $certificate_attribute]);
     }
     public function certificateAttributesCreate(Request $request)
     {
         if ($request->type == 1) {
-            if (!Auth::user()->hasPermission('event_management-update'))
+            if (!Auth::user()->hasPermission('event_management-update')) {
                 abort(403);
-        } else {
-            if (!Auth::user()->hasPermission('event_management-create'))
-                abort(403);
+            }
+        } elseif (!Auth::user()->hasPermission('event_management-create')) {
+            abort(403);
         }
         try {
             $certificate = CertificateAttribute::firstOrNew(['uuid' => $request->uuid]);
@@ -106,46 +114,56 @@ class EventSurveyCertificateController extends Controller
             if (request()->hasFile('logo_1')) {
                 $fileName = pathinfo($request->logo_1->getClientOriginalName(), PATHINFO_FILENAME);
                 $logo_1 = $this->slugify($fileName) . "." . $request->logo_1->extension();
-                if ($request->type == 1)
+                if ($request->type == 1) {
                     $pre_logo_1 = $certificate->logo_1;
+                }
             }
 
 
             if (request()->hasFile('logo_2')) {
                 $fileName = pathinfo($request->logo_2->getClientOriginalName(), PATHINFO_FILENAME);
                 $logo_2 = $this->slugify($fileName) . "." . $request->logo_2->extension();
-                if ($request->type == 1)
+                if ($request->type == 1) {
                     $pre_logo_2 = $certificate->logo_2;
+                }
             }
             if (request()->hasFile('signature_1')) {
                 $fileName = pathinfo($request->signature_1->getClientOriginalName(), PATHINFO_FILENAME);
                 $signature_1 = $this->slugify($fileName) . "." . $request->signature_1->extension();
-                if ($request->type == 1)
+                if ($request->type == 1) {
                     $pre_signature_1 = $certificate->signature_1;
+                }
             }
             if (request()->hasFile('signature_2')) {
                 $fileName = pathinfo($request->signature_2->getClientOriginalName(), PATHINFO_FILENAME);
                 $signature_2 = $this->slugify($fileName) . "." . $request->signature_2->extension();
-                if ($request->type == 1)
+                if ($request->type == 1) {
                     $pre_signature_2 = $certificate->signature_2;
+                }
             }
 
             if (request()->hasFile('background_image')) {
                 $fileName = pathinfo($request->background_image->getClientOriginalName(), PATHINFO_FILENAME);
                 $background_image = $this->slugify($fileName) . "." . $request->background_image->extension();
-                if ($request->type == 1)
+                if ($request->type == 1) {
                     $pre_background_image = $certificate->background_image;
+                }
             }
-            if (request()->hasFile('logo_1'))
+            if (request()->hasFile('logo_1')) {
                 $certificate->logo_1 = $logo_1;
-            if (request()->hasFile('logo_2'))
+            }
+            if (request()->hasFile('logo_2')) {
                 $certificate->logo_2 = $logo_2;
-            if (request()->hasFile('signature_1'))
+            }
+            if (request()->hasFile('signature_1')) {
                 $certificate->signature_1 = $signature_1;
-            if (request()->hasFile('signature_2'))
+            }
+            if (request()->hasFile('signature_2')) {
                 $certificate->signature_2 = $signature_2;
-            if (request()->hasFile('background_image'))
+            }
+            if (request()->hasFile('background_image')) {
                 $certificate->background_image = $background_image;
+            }
             $certificate->introducer_name_1 = $request->introducer_name_1;
             $certificate->introducer_name_2 = $request->introducer_name_2;
             $certificate->introducer_company_1 = $request->introducer_company_1;
@@ -154,44 +172,51 @@ class EventSurveyCertificateController extends Controller
             if ($certificate->save()) {
                 if (request()->hasFile('logo_1')) {
                     $request->logo_1->move(public_path() . $path, $logo_1);
-                    if ($request->type == 1)
+                    if ($request->type == 1) {
                         unlink(public_path() . $path . '/' . $pre_logo_1);
+                    }
                 }
 
                 if (request()->hasFile('logo_2')) {
                     $request->logo_2->move(public_path() . $path, $logo_2);
-                    if ($request->type == 1)
+                    if ($request->type == 1) {
                         unlink(public_path() . $path . '/' . $pre_logo_2);
+                    }
                 }
                 if (request()->hasFile('signature_1')) {
                     $request->signature_1->move(public_path() . $path, $signature_1);
-                    if ($request->type == 1)
+                    if ($request->type == 1) {
                         unlink(public_path() . $path . '/' . $pre_signature_1);
+                    }
                 }
                 if (request()->hasFile('signature_2')) {
                     $request->signature_2->move(public_path() . $path, $signature_2);
-                    if ($request->type == 1)
+                    if ($request->type == 1) {
                         unlink(public_path() . $path . '/' . $pre_signature_2);
+                    }
                 }
 
                 if (request()->hasFile('background_image')) {
                     $request->background_image->move(public_path() . $path, $background_image);
-                    if ($request->type == 1)
+                    if ($request->type == 1) {
                         unlink(public_path() . $path . '/' . $pre_background_image);
+                    }
                 }
             }
-            if ($request->type == 0)
+            if ($request->type == 0) {
                 return redirect()->back()->with('doneMessage', 'Attributes created successfully.');
-            else
+            } else {
                 return redirect()->back()->with('doneMessage', 'Attributes updated successfully.');
+            }
         } catch (\Throwable $th) {
             return redirect()->back()->with('errorMessage', $th->getMessage());
         }
     }
     public function certificateSent($survey_uuid)
     {
-        if (!Auth::user()->hasPermission('event_management-read'))
+        if (!Auth::user()->hasPermission('event_management-read')) {
             abort(403);
+        }
         try {
             $this->sent_certificate($survey_uuid);
             return redirect()->back()->with('doneMessage', 'Certificate Successfully Sent.');

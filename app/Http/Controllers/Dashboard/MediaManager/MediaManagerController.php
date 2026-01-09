@@ -37,8 +37,9 @@ class MediaManagerController extends Controller
      */
     public function index()
     {
-        if (!Auth::user()->hasPermission('media_managers-read'))
+        if (!Auth::user()->hasPermission('media_managers-read')) {
             abort(403);
+        }
         // General for all pages
         // $GeneralWebmasterSections = WebmasterSection::where('status', '=', '1')
         //     ->orderby('row_no', 'asc')
@@ -55,7 +56,7 @@ class MediaManagerController extends Controller
         // }
 
         // General END
-        return view('dashboard.media-manager.list', compact( 'MediaFiles'));
+        return view('dashboard.media-manager.list', ['MediaFiles' => $MediaFiles]);
     }
 
     public function get_media_data(Request $request)
@@ -146,7 +147,7 @@ class MediaManagerController extends Controller
             // $reponse = MediaManager::wherein('media_uid',$request->media_uids)->update(['deleted_by',Auth::user()->id]);
             // $res = MediaManager::wherein('media_uid', $request->media_uids)->delete();
             $res = 0;
-            if ($res != 0) {
+            if ($res !== 0) {
                 return redirect()
                     ->action('Dashboard\MediaManager\MediaManagerController@index')
                     ->with('doneMessage', __('Modifications you have made saved successfully'));
@@ -222,7 +223,7 @@ class MediaManagerController extends Controller
 
     public function media_alttag_change(Request $request)
     {
-        $media_file = MediaManager::where('media_uid', $request->media_uid)->first();
+        MediaManager::where('media_uid', $request->media_uid)->first();
         $file_name = $request->alt_tag;
         $media_manager_array = [];
         if (strlen($file_name) > 50) {

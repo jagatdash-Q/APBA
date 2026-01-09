@@ -51,16 +51,14 @@ class MediaController extends Controller
         }
         Session::put('choose_type', $choose_type);
 
-        if (!$path) {
+        if ($path === '') {
             $path = Session::put('catId', $catId);
+        } elseif ($path == 'home') {
+            $path = null;
+            Session::forget('path');
         } else {
-            if ($path == 'home') {
-                $path = null;
-                Session::forget('path');
-            } else {
-                // switch to specified media folder
-                Session::put('path', $path);
-            }
+            // switch to specified media folder
+            Session::put('path', $path);
         }
         $data['media']['files'] = MediaManager::orderBy('id', 'DESC')->get();
         // load view
@@ -82,7 +80,7 @@ class MediaController extends Controller
                     $fileName =$file->getClientOriginalName();
                     $file_name = pathinfo($fileName, PATHINFO_FILENAME); // file
                     $extension = pathinfo($fileName, PATHINFO_EXTENSION);
-                    for($i=0;sizeof(MediaManager::where('file_name','=',$fileName)->get()) > 0; $i++){
+                    for($i=0;count(MediaManager::where('file_name','=',$fileName)->get()) > 0; $i++){
                             $fileName=$file_name.'_'.$i.'.'.$extension;
                     }
                     $file->move(public_path('/uploads/media/'), $fileName);
@@ -102,6 +100,7 @@ class MediaController extends Controller
                 }
             }
         }
+        return null;
     }
 
     /**

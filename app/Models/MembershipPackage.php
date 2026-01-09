@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Class MembershipPackage
+ *
+ * @property int $id
+ * @property string $membership_name
+ */
 class MembershipPackage extends Model
 {
     use HasFactory, SoftDeletes;

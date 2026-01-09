@@ -67,8 +67,9 @@ class CustomerController extends Controller
         $profile_pic = time() . '.' . $request->profile_pic->extension();
 
         $packages = MembershipPackage::where('subscription_type', 'sub')->where('id', $request->package_id)->first();
-        if ($packages == null)
+        if ($packages == null) {
             return redirect()->back()->with('errorMessage', 'Please choose any of the memberships package.')->withInput();
+        }
 
         // Check customer exist or not 
 
@@ -122,8 +123,8 @@ class CustomerController extends Controller
     {
         $packages = MembershipPackage::where('subscription_type', 'sub')->get();
         $country = Country::where('status', '1')->get();
-        if (count($packages)) {
-            return view('frontend.customer_register', compact('country', 'packages'));
+        if (count($packages) > 0) {
+            return view('frontend.customer_register', ['country' => $country, 'packages' => $packages]);
         } else {
             abort(404);
         }
@@ -139,15 +140,16 @@ class CustomerController extends Controller
                 abort(404);
             } else {
                 $country = Country::where('status', '1')->get();
-                return view('frontend.membership_register', compact('country', 'is_member_ship_exist'));
+                return view('frontend.membership_register', ['country' => $country, 'is_member_ship_exist' => $is_member_ship_exist]);
             }
         }
     }
 
     public function verifyCustomerEmail(Request $request)
     {
-        if (!isset($_GET['token']))
+        if (!isset($_GET['token'])) {
             return redirect('/')->with('errorMessage', 'Invalid email token');
+        }
         $token = $_GET['token'];
         $userdetails = Customer::where('email_token', $token)->first();
         if ($token == '') {
@@ -156,17 +158,15 @@ class CustomerController extends Controller
 
         if ($userdetails == NULL) {
             return redirect('/')->with('errorMessage', 'Customer does not exist');
+        } elseif ($userdetails->is_verify == "1") {
+            return redirect('/')->with('doneMessage', 'Email Already Verified');
         } else {
-            if ($userdetails->is_verify == "1") {
-                return redirect('/')->with('doneMessage', 'Email Already Verified');
-            } else {
-                $form_data = array(
-                    'email_verified_on' => now(),
-                    'is_verify_email' => "1",
-                );
-                Customer::whereId($userdetails->id)->update($form_data);
-                return redirect('/')->with('doneMessage', 'Email Verified Successfully');
-            }
+            $form_data = array(
+                'email_verified_on' => now(),
+                'is_verify_email' => "1",
+            );
+            Customer::whereId($userdetails->id)->update($form_data);
+            return redirect('/')->with('doneMessage', 'Email Verified Successfully');
         }
     }
 
@@ -186,7 +186,7 @@ class CustomerController extends Controller
             if ($time_diff > 30) {
                 return redirect('/')->with('errorMessage', 'Reset password link has been expired');
             }
-            return view('frontend.customer.password_reset', compact('password_reset_details'));
+            return view('frontend.customer.password_reset', ['password_reset_details' => $password_reset_details]);
         }
     }
 
@@ -218,7 +218,7 @@ class CustomerController extends Controller
         $check_election = Voting::whereDate('start_date', '<=', Carbon::now()->format('Y-m-d'))->whereDate('end_date', '>=', Carbon::now()->format('Y-m-d'))->orderBy('id', 'desc')->where('status', '1')->first();
         $election_content = VotingContent::first();
         $nomination_content = NominationContent::first();
-        return view('frontend.customer.dashboard', compact('country', 'customer_details', 'packages', 'check_nomination', 'election_content', 'check_election', 'nomination_content'));
+        return view('frontend.customer.dashboard', ['country' => $country, 'customer_details' => $customer_details, 'packages' => $packages, 'check_nomination' => $check_nomination, 'election_content' => $election_content, 'check_election' => $check_election, 'nomination_content' => $nomination_content]);
     }
     public function customerProfileUpdate(Request $request)
     {
@@ -227,10 +227,8 @@ class CustomerController extends Controller
             if ($check_customer == null) {
                 return redirect()->back()->with('errorMessage', 'Profile not found!, Please contact with admin.');
             }
-            if ($request->password != null) {
-                if (Hash::check($request->password, $check_customer->password)) {
-                    return redirect()->back()->with('errorMessage', 'You\'ve used this Password before. Try again with a different Password.');
-                }
+            if ($request->password != null && Hash::check($request->password, $check_customer->password)) {
+                return redirect()->back()->with('errorMessage', 'You\'ve used this Password before. Try again with a different Password.');
             }
             if (request()->hasFile('profile_pic')) {
                 $postData = $request->only('profile_pic');
@@ -255,11 +253,13 @@ class CustomerController extends Controller
             $check_customer->user_name = $request->full_name;
             $check_customer->social_media_link = $request->social_media_link;
 
-            if ($profile_pic != null)
+            if ($profile_pic != null) {
                 $check_customer->profile_pic = $profile_pic;
+            }
 
-            if ($request->password != null)
+            if ($request->password != null) {
                 $check_customer->password = Hash::make($request->password);
+            }
             $check_customer->save();
             // if (request()->hasFile('profile_pic')) {
             //     if ($check_customer->save()) {
@@ -268,18 +268,14 @@ class CustomerController extends Controller
             //     }
             // }
 
-            if (request()->hasFile('profile_pic')) {
-                if ($check_customer->save()) {
-                    $oldProfilePicPath = public_path() . '/uploads/profile_pic/' . $check_customer->profile_pic;
-                    
-                    // Check if the file exists before unlinking
-                    if (file_exists($oldProfilePicPath)) {
-                        unlink($oldProfilePicPath);
-                    }
-                    
-                    // Move the new profile picture
-                    $request->profile_pic->move(public_path() . '/uploads/profile_pic', $profile_pic);
+            if (request()->hasFile('profile_pic') && $check_customer->save()) {
+                $oldProfilePicPath = public_path() . '/uploads/profile_pic/' . $check_customer->profile_pic;
+                // Check if the file exists before unlinking
+                if (file_exists($oldProfilePicPath)) {
+                    unlink($oldProfilePicPath);
                 }
+                // Move the new profile picture
+                $request->profile_pic->move(public_path() . '/uploads/profile_pic', $profile_pic);
             }
             return redirect()->back()->with('doneMessage', 'Profile updated successfully');
         } catch (Exception $e) {
@@ -314,7 +310,7 @@ class CustomerController extends Controller
 
         $provider = new PayPalClient;
         $provider->setApiCredentials(config('paypal'));
-        $paypalToken = $provider->getAccessToken();
+        $provider->getAccessToken();
         $response = $provider->createOrder([
             "intent" => "CAPTURE",
             "application_context" => [
@@ -338,8 +334,7 @@ class CustomerController extends Controller
                     return redirect()->away($links['href']);
                 }
             }
-
-            if ($payment_for == "pay now" || $payment_for == "renew" || $payment_for == "upgrade" || $payment_for == "event registration" || $payment_for == "retry event registartion") {
+            if (in_array($payment_for, ["pay now", "renew", "upgrade", "event registration", "retry event registartion"])) {
                 return redirect()
                     ->back()
                     ->with('errorMessage', 'Something went wrong!, please try again later.');
@@ -348,43 +343,40 @@ class CustomerController extends Controller
                     ->back()
                     ->with('doneMessage', 'You have successfully registered , please activate your account by activation link sent to email but subscription not done.');
             }
+        } elseif (in_array($payment_for, ["pay now", "renew", "upgrade", "event registration", "retry event registartion"])) {
+            return redirect()
+                ->back()
+                ->with('errorMessage', 'Something went wrong!, please try again later.');
         } else {
-            if ($payment_for == "pay now" || $payment_for == "renew" || $payment_for == "upgrade" || $payment_for == "event registration" || $payment_for == "retry event registartion") {
-                return redirect()
-                    ->back()
-                    ->with('errorMessage', 'Something went wrong!, please try again later.');
-            } else {
-                return redirect()
-                    ->back()
-                    ->with('doneMessage', 'You have successfully registered , please activate your account by activation link sent to email but' . $response['message']);
-            }
+            return redirect()
+                ->back()
+                ->with('doneMessage', 'You have successfully registered , please activate your account by activation link sent to email but' . $response['message']);
         }
     }
 
     public function successTransaction(Request $request)
     {
-        if (!isset($request['token']) || $request['token'] == null)
+        if (!isset($request['token']) || $request['token'] == null) {
             return redirect()
                 ->back()
                 ->with('errorMessage', 'Something went wrong');
+        }
         $payment_details = null;
         $provider = new PayPalClient;
         $provider->setApiCredentials(config('paypal'));
         $provider->getAccessToken();
         $response = $provider->capturePaymentOrder($request['token']);
-        if ($request['payment_id'] != null)
+        if ($request['payment_id'] != null) {
             $payment_details =  Payment::where('id', $request['payment_id'])->first();
+        }
 
         if (isset($response['status']) && $response['status'] == 'COMPLETED') {
-            if ($payment_details->payment_for == "pay now" || $payment_details->payment_for == "renew" || $payment_details->payment_for == "upgrade" || $payment_details->payment_for == "membership registration" || $payment_details->payment_for == "customer registration") {
+            if (in_array($payment_details->payment_for, ["pay now", "renew", "upgrade", "membership registration", "customer registration"])) {
                 $subscription_expired_on = null;
                 $get_plan = MembershipPackage::where('subscription_type', 'sub')->where('id', $payment_details->subscription_id)->first();
                 if ($get_plan != null) {
                     $get_plan->membership_plan;
-                    if ($get_plan->membership_plan == "yearly")
-                        $subscription_expired_on = Carbon::now()->addYear();
-                    else
-                        $subscription_expired_on = "2219-07-21";
+                    $subscription_expired_on = $get_plan->membership_plan == "yearly" ? Carbon::now()->addYear() : "2219-07-21";
                 }
 
                 $get_customer = Customer::where('id', $request['id'])->first();
@@ -423,11 +415,12 @@ class CustomerController extends Controller
                 }
 
 
-                if ($payment_details->payment_for == "pay now" || $payment_details->payment_for == "renew" || $payment_details->payment_for == "upgrade" || $payment_details->payment_for == "event registration" || $payment_details->payment_for == "retry event registartion") {
+                if (in_array($payment_details->payment_for, ["pay now", "renew", "upgrade", "event registration", "retry event registartion"])) {
 
-                    if ($payment_details->payment_for != "event registration" || $payment_details->payment_for != "retry event registartion")
+                    if ($payment_details->payment_for != "event registration" || $payment_details->payment_for != "retry event registartion") {
                         // clear sent subscription reminder mail record
                         ReminderMail::where('customer_id', $request['id'])->delete();
+                    }
 
                     return redirect()
                         ->back()
@@ -454,7 +447,7 @@ class CustomerController extends Controller
                 }
 
 
-                if ($payment_details->payment_for == "pay now" || $payment_details->payment_for == "renew" || $payment_details->payment_for == "upgrade" || $payment_details->payment_for == "event registration" || $payment_details->payment_for == "retry event registartion") {
+                if (in_array($payment_details->payment_for, ["pay now", "renew", "upgrade", "event registration", "retry event registartion"])) {
                     return redirect()
                         ->back()
                         ->with('errorMessage', 'Something went wrong!, please try again later.');
@@ -474,17 +467,19 @@ class CustomerController extends Controller
     public function cancelTransaction(Request $request)
     {
         $payment_details = null;
-        if ($request['payment_id'] != null)
+        if ($request['payment_id'] != null) {
             $payment_details =  Payment::where('id', $request['payment_id'])->first();
+        }
 
         if ($payment_details != null) {
             $payment_details->payment_status = 'cancel';
             $payment_details->response = null;
             $payment_details->save();
 
-            if ($payment_details->event_registartion_id != null)
+            if ($payment_details->event_registartion_id != null) {
                 EventRegistration::where('id', $payment_details->event_registartion_id)->update(['payment_status' => 'cancel']);
-            if ($payment_details->payment_for == "pay now" || $payment_details->payment_for == "renew" || $payment_details->payment_for == "upgrade" || $payment_details->payment_for == "event registration" || $payment_details->payment_for == "retry event registartion") {
+            }
+            if (in_array($payment_details->payment_for, ["pay now", "renew", "upgrade", "event registration", "retry event registartion"])) {
                 return redirect()
                     ->back()
                     ->with('errorMessage', 'You have cancelled the transaction.');
@@ -509,8 +504,9 @@ class CustomerController extends Controller
     {
         $check_survey = 0;
         $event_program = EventProgramRegistration::with('getProgramDetails', 'getEventRegDetails')->where('uuid', $program_uuid)->first();
-        if ($event_program == null)
+        if ($event_program == null) {
             abort(404);
+        }
 
         // if ($event_program->survey == 'yes')
         //     abort(404);
@@ -522,50 +518,45 @@ class CustomerController extends Controller
         //         abort(404);
         //     }
         // }
-        if (isset($event_program->getProgramDetails)) {
-            if ($event_program->getProgramDetails->survey == 'yes' && $event_program->getProgramDetails->survey_activity_uuid != null) {
-                $check_survey = 1;
-            }
+        if (isset($event_program->getProgramDetails) && ($event_program->getProgramDetails->survey == 'yes' && $event_program->getProgramDetails->survey_activity_uuid != null)) {
+            $check_survey = 1;
         }
-        if (isset($event_program->getEventRegDetails)) {
-            if ($event_program->getEventRegDetails->payment_status != 'success')
-                $check_survey = 0;
+        if (isset($event_program->getEventRegDetails) && $event_program->getEventRegDetails->payment_status != 'success') {
+            $check_survey = 0;
         }
-        if ($check_survey == 0)
+        if ($check_survey === 0) {
             abort(404);
+        }
         $survey_reg = SurveyRegistration::where('event_program_registration_uuid', $program_uuid)->first();
-        return view('frontend.customer.survey_certification', compact('event_program', 'survey_reg'));
+        return view('frontend.customer.survey_certification', ['event_program' => $event_program, 'survey_reg' => $survey_reg]);
     }
     public function customerOptionalSurvey($optional_uuid)
     {
         $check_survey = 0;
         $optional_program = EventRegistrationOptional::with('getOptionalDetails', 'getEventRegDetails')->where('uuid', $optional_uuid)->first();
-        if ($optional_program == null)
+        if ($optional_program == null) {
             abort(404);
+        }
 
-        if (isset($optional_program->getOptionalDetails)) {
-            if ($optional_program->getOptionalDetails->survey == 'yes' && $optional_program->getOptionalDetails->survey_activity_uuid != null) {
-                $check_survey = 1;
-            }
+        if (isset($optional_program->getOptionalDetails) && ($optional_program->getOptionalDetails->survey == 'yes' && $optional_program->getOptionalDetails->survey_activity_uuid != null)) {
+            $check_survey = 1;
         }
-        if (isset($optional_program->getEventRegDetails)) {
-            if ($optional_program->getEventRegDetails->payment_status != 'success')
-                $check_survey = 0;
+        if (isset($optional_program->getEventRegDetails) && $optional_program->getEventRegDetails->payment_status != 'success') {
+            $check_survey = 0;
         }
-        if ($check_survey == 0)
+        if ($check_survey === 0) {
             abort(404);
+        }
         $survey_reg = SurveyRegistration::where('event_registration_optional_uuid', $optional_uuid)->first();
-        return view('frontend.customer.optional_survey_certification', compact('optional_program', 'survey_reg'));
+        return view('frontend.customer.optional_survey_certification', ['optional_program' => $optional_program, 'survey_reg' => $survey_reg]);
     }
     public function surveyDetails(Request $request)
     {
         if ($request->ajax()) {
             if ($request->reg_type == "program") {
-                $event_reg = EventProgramRegistration::with('getProgramDetails')->where('event_registration_uuid', $request->reg_uuid)->get();
-                return $event_reg;
+                return EventProgramRegistration::with('getProgramDetails')->where('event_registration_uuid', $request->reg_uuid)->get();
             } else {
-                $event_reg_opt = EventRegistrationOptional::with('getOptionalDetails', 'getEventRegDetails')->where('event_registration_id', $request->reg_uuid)->get();
-                return $event_reg_opt;
+                return EventRegistrationOptional::with('getOptionalDetails', 'getEventRegDetails')->where('event_registration_id', $request->reg_uuid)->get();
             }
         }
     }
@@ -575,13 +566,8 @@ class CustomerController extends Controller
             try {
                 $type = null;
                 $check_type = EventProgramRegistration::where('uuid', $request->event_program_registration_uuid)->with('getEventRegDetails')->first();
-                if ($check_type != null) {
-                    if (isset($check_type->getEventRegDetails)) {
-                        if ($check_type->getEventRegDetails->customer_id == null)
-                            $type = 'Guest';
-                        else
-                            $type = 'Member';
-                    }
+                if ($check_type != null && isset($check_type->getEventRegDetails)) {
+                    $type = $check_type->getEventRegDetails->customer_id == null ? 'Guest' : 'Member';
                 }
                 // $survey_reg = new SurveyRegistration();
                 $survey_reg = SurveyRegistration::firstOrNew(['event_program_registration_uuid' => $request->event_program_registration_uuid]);
@@ -610,23 +596,27 @@ class CustomerController extends Controller
                 $survey_reg->save();
                 $this->sent_certificate($survey_reg->uuid);
                 if ($request->type == '0') {
-                    if ($survey_reg->save())
+                    if ($survey_reg->save()) {
                         EventProgramRegistration::where('uuid', $request->event_program_registration_uuid)->update(['survey' => 'yes']);
+                    }
                     return ['success', "Survey form submitted successfully."];
-                } else
+                } else {
                     return ['success', "Survey form updated successfully."];
+                }
             } catch (\Throwable $th) {
                 return ['error', "Something went wrong! Please try again later."];
             }
         }
+        return null;
     }
 
     public function nonMemberSurvey($survey_uuid)
     {
         $survey_reg = null;
         $survey_activity = SurveyActivity::where('uuid', $survey_uuid)->with('getEventOptional', 'getEventProgram')->first();
-        if ($survey_activity == null)
+        if ($survey_activity == null) {
             abort(404);
+        }
 
         // $event_name=;
         // if (!isset($survey_activity->getEventProgram)){
@@ -636,7 +626,7 @@ class CustomerController extends Controller
         // }
         // abort(404);
 
-        return view('frontend.customer.non_member_survey_certification', compact('survey_activity', 'survey_reg'));
+        return view('frontend.customer.non_member_survey_certification', ['survey_activity' => $survey_activity, 'survey_reg' => $survey_reg]);
     }
 
     public function nonMemberSubmitSurvey(Request $request)
@@ -670,6 +660,7 @@ class CustomerController extends Controller
                 return ['error', "Something went wrong! Please try again later."];
             }
         }
+        return null;
     }
     public function optionalSubmitSurvey(Request $request)
     {
@@ -678,13 +669,8 @@ class CustomerController extends Controller
                 $type = null;
                 $check_type = EventRegistrationOptional::where('uuid', $request->event_registration_optional_uuid)->with('getEventRegDetails')->first();
 
-                if ($check_type != null) {
-                    if (isset($check_type->getEventRegDetails)) {
-                        if ($check_type->getEventRegDetails->customer_id == null)
-                            $type = 'Guest';
-                        else
-                            $type = 'Member';
-                    }
+                if ($check_type != null && isset($check_type->getEventRegDetails)) {
+                    $type = $check_type->getEventRegDetails->customer_id == null ? 'Guest' : 'Member';
                 }
 
                 $survey_reg = SurveyRegistration::firstOrNew(['event_registration_optional_uuid' => $request->event_registration_optional_uuid]);
@@ -713,14 +699,17 @@ class CustomerController extends Controller
                 $survey_reg->save();
                 // $this->sent_certificate($survey_reg->uuid);
                 if ($request->type == '0') {
-                    if ($survey_reg->save())
+                    if ($survey_reg->save()) {
                         EventRegistrationOptional::where('uuid', $request->event_registration_optional_uuid)->update(['survey' => 'yes']);
+                    }
                     return ['success', "Survey form submitted successfully."];
-                } else
+                } else {
                     return ['success', "Survey form updated successfully."];
+                }
             } catch (\Throwable $th) {
                 return ['error', "Something went wrong! Please try again later."];
             }
         }
+        return null;
     }
 }

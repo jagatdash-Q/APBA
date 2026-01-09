@@ -26,16 +26,18 @@ class UserController extends Controller
     }
     public function manageUsers(Request $request)
     {
-        if (!Auth::user()->hasPermission('users-read'))
+        if (!Auth::user()->hasPermission('users-read')) {
             abort(403);
+        }
         $user = User::with('getRole')->get();
-        return view('dashboard.user-manager.index', compact('user'));
+        return view('dashboard.user-manager.index', ['user' => $user]);
     }
 
     public function edituser(Request $request, $id)
     {
-        if (!Auth::user()->hasPermission('users-update'))
+        if (!Auth::user()->hasPermission('users-update')) {
             abort(403);
+        }
         // get All permissions
         $roles = Role::where('name', '!=', 'superadmin')->get();
         $user_details = User::whereId($id)->with('getRole')->first();
@@ -45,7 +47,7 @@ class UserController extends Controller
                     if ($user_details->getRole->getRoleDetails->display_name == 'Superadmin') {
                         return redirect()->route('admin.users.manage')->with('infoMessage', "System reserved role can't be editable");
                     } else {
-                        return view('dashboard.user-manager.edit-user', compact('roles', 'user_details'));
+                        return view('dashboard.user-manager.edit-user', ['roles' => $roles, 'user_details' => $user_details]);
                     }
                 } else {
                     abort(404);
@@ -60,8 +62,9 @@ class UserController extends Controller
 
     public function updateUser(Request $request)
     {
-        if (!Auth::user()->hasPermission('users-update'))
+        if (!Auth::user()->hasPermission('users-update')) {
             abort(403);
+        }
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
             'role' => 'required',
@@ -84,16 +87,18 @@ class UserController extends Controller
 
     public function createUser(Request $request)
     {
-        if (!Auth::user()->hasPermission('users-create'))
+        if (!Auth::user()->hasPermission('users-create')) {
             abort(403);
+        }
         $roles = Role::where('name', '!=', 'superadmin')->get();
-        return view('dashboard.user-manager.create-user', compact('roles'));
+        return view('dashboard.user-manager.create-user', ['roles' => $roles]);
     }
 
     public function storeUser(Request $request)
     {
-        if (!Auth::user()->hasPermission('users-create'))
+        if (!Auth::user()->hasPermission('users-create')) {
             abort(403);
+        }
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
             'email' => 'required|unique:users,email',
@@ -120,35 +125,35 @@ class UserController extends Controller
 
     public function deleteUser(Request $request)
     {
-        if (!Auth::user()->hasPermission('users-delete'))
+        if (!Auth::user()->hasPermission('users-delete')) {
             abort(403);
+        }
         $user_details = User::whereId($request->id)->with('getRole')->first();
         if ($user_details == null) {
             return ['status' => 'error', 'message' => 'role not found'];
-        } else {
-            if ($user_details->getRole != null) {
-                if ($user_details->getRole->getRoleDetails != null) {
-                    if ($user_details->getRole->getRoleDetails->display_name == 'Superadmin') {
-                        return redirect()->route('admin.users.manage')->with('infoMessage', "System reserved role can't be deletable");
-                    } else {
-                        $roleNames=$user_details->getRoles();
-                        $user_details->removeRoles($roleNames);
-                        User::whereId($request->id)->delete();
-                        return ['status' => 'success', 'message' => 'User deleted successfully'];
-                    }
+        } elseif ($user_details->getRole != null) {
+            if ($user_details->getRole->getRoleDetails != null) {
+                if ($user_details->getRole->getRoleDetails->display_name == 'Superadmin') {
+                    return redirect()->route('admin.users.manage')->with('infoMessage', "System reserved role can't be deletable");
                 } else {
-                    abort(404);
+                    $roleNames=$user_details->getRoles();
+                    $user_details->removeRoles($roleNames);
+                    User::whereId($request->id)->delete();
+                    return ['status' => 'success', 'message' => 'User deleted successfully'];
                 }
             } else {
                 abort(404);
             }
+        } else {
+            abort(404);
         }
     }
     public function reset2fa(Request $request)
     {
         $user_details = User::where('id', $request->id)->first();
-        if ($user_details == null)
+        if ($user_details == null) {
             return redirect()->back()->with('errorMessage', "User not found.");
+        }
 
         $user_details->google2fa_secret = null;
         $user_details['2fa_status'] = '0';

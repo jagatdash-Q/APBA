@@ -20,19 +20,16 @@ class MemberCreateDateSeeder extends Seeder
 
             foreach ($customer as $value) {
 
-                if ($value->active_subscription != null) {
-                    if ($value->getActiveSubscriptionDetails != null) {
-                        if ($value->getActiveSubscriptionDetails->membership_name == "Life Time Membership") {
-                            $dateObject = new DateTime($value->active_subscription_expired_on);
-                            $dateObject->setDate(2219, $dateObject->format('m'), $dateObject->format('d'));
-                            $value->active_subscription_expired_on = $dateObject->format('Y-m-d');
-                            $value->save();
-                        }
-
-                        if ($value->getActiveSubscriptionDetails->membership_name == "Corporate Membership") {
-                            $value->nomination = 'no';
-                            $value->save();
-                        }
+                if ($value->active_subscription != null && $value->getActiveSubscriptionDetails != null) {
+                    if ($value->getActiveSubscriptionDetails->membership_name == "Life Time Membership") {
+                        $dateObject = new DateTime($value->active_subscription_expired_on);
+                        $dateObject->setDate(2219, $dateObject->format('m'), $dateObject->format('d'));
+                        $value->active_subscription_expired_on = $dateObject->format('Y-m-d');
+                        $value->save();
+                    }
+                    if ($value->getActiveSubscriptionDetails->membership_name == "Corporate Membership") {
+                        $value->nomination = 'no';
+                        $value->save();
                     }
                 }
                 $expire_year = $value->active_subscription_expired_on;
@@ -44,14 +41,12 @@ class MemberCreateDateSeeder extends Seeder
                     }
                 }
 
-                if ($value->getSubscriptionHistory != null) {
-                    if (count($value->getSubscriptionHistory)) {
-                        foreach ($value->getSubscriptionHistory as $subscription) {
-                            $subscription_year = Carbon::parse($subscription->subscription_expired_on)->format('Y');
-                            if ($subscription_year == 1970) {
-                                $subscription->subscription_expired_on = null;
-                                $subscription->save();
-                            }
+                if ($value->getSubscriptionHistory != null && count($value->getSubscriptionHistory)) {
+                    foreach ($value->getSubscriptionHistory as $subscription) {
+                        $subscription_year = Carbon::parse($subscription->subscription_expired_on)->format('Y');
+                        if ($subscription_year == 1970) {
+                            $subscription->subscription_expired_on = null;
+                            $subscription->save();
                         }
                     }
                 }

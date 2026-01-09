@@ -23,10 +23,12 @@ class ExportMember implements FromCollection, WithHeadings
     {
         $temp_data = [];
         $members = Customer::query();
-        if ($this->data['subscription_status'] != null)
+        if ($this->data['subscription_status'] != null) {
             $members = $members->where('current_subscription_status', $this->data['subscription_status']);
-        if ($this->data['year'] != null)
+        }
+        if ($this->data['year'] != null) {
             $members = $members->whereYear('active_subscription_expired_on', $this->data['year']);
+        }
 
         $members = $members->get();
         if (count($members) > 0) {
@@ -44,24 +46,23 @@ class ExportMember implements FromCollection, WithHeadings
 
 
                 $payment_amount = Payment::where('customer_id', $value->id)->where('subscription_id', $value->active_subscription)->orderBy('id', 'desc')->first('total_amount');
-                if ($payment_amount == null)
-                    $value->amount = null;
-                else
-                    $value->amount = $payment_amount->total_amount;
+                $value->amount = $payment_amount == null ? null : $payment_amount->total_amount;
 
-                if ($value->current_subscription_status == 'a')
+                if ($value->current_subscription_status == 'a') {
                     $status = "Active";
-                elseif ($value->current_subscription_status == 'p')
+                } elseif ($value->current_subscription_status == 'p') {
                     $status = "Pending";
-                elseif ($value->current_subscription_status == 'e')
+                } elseif ($value->current_subscription_status == 'e') {
                     $status = "Expire";
-                else
+                } else {
                     $status = "";
+                }
 
-                if (isset($value->getActiveSubscriptionDetails))
+                if (isset($value->getActiveSubscriptionDetails)) {
                     $membership_name = $value->getActiveSubscriptionDetails->membership_name == null ? null : $value->getActiveSubscriptionDetails->membership_name;
-                else
+                } else {
                     $membership_name = null;
+                }
 
                 $temp_data[] = [$value->id, $value->user_name, $value->email, $value->country, $value->social_media_link, $value->is_verify_email == '0' ? 'No' : 'Yes', $value->nomination, $membership_name, "S$ " . $value->amount, $status,$subscription_year, Carbon::parse($value->active_subscription_expired_on)->format('l m d,Y')];
                 $count++;

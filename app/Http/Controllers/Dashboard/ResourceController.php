@@ -40,8 +40,7 @@ class ResourceController extends Controller
 
     public function get_temp_card_data($temp_uuid, $section_id)
     {
-        $temp_card_data = ResourceCard::with(['getIcon', 'getHoverIcon'])->where('resource_uuid', $temp_uuid)->where('section_id', $section_id)->orderBy('id', 'asc')->get();
-        return $temp_card_data;
+        return ResourceCard::with(['getIcon', 'getHoverIcon'])->where('resource_uuid', $temp_uuid)->where('section_id', $section_id)->orderBy('id', 'asc')->get();
     }
     public function tempCardDelete(Request $request)
     {
@@ -76,11 +75,11 @@ class ResourceController extends Controller
     public function store(Request $request)
     {
         if ($request->page_type == "update") {
-            if (!Auth::user()->hasPermission('content_management-update'))
+            if (!Auth::user()->hasPermission('content_management-update')) {
                 abort(403);
-        } else {
-            if (!Auth::user()->hasPermission('content_management-create'))
-                abort(403);
+            }
+        } elseif (!Auth::user()->hasPermission('content_management-create')) {
+            abort(403);
         }
         try {
             if ($request->menu_section_count != null) {
@@ -139,7 +138,7 @@ class ResourceController extends Controller
                                 $resource_menu->save();
                                 if ($resource_menu->save()) {
                                     $get_card =  ResourceCard::where('resource_uuid', $resource->uuid)->where('section_id', $i)->get();
-                                    if (count($get_card)) {
+                                    if (count($get_card) > 0) {
                                         foreach ($get_card as $card) {
                                             $card->resource_menu_uuid = $resource_menu->uuid;
                                             $card->save();
@@ -153,37 +152,43 @@ class ResourceController extends Controller
                         'content_status' => '1'
                     );
                     Content::whereId($request->content_id)->update($data);
-                    if ($request->page_type == "update")
+                    if ($request->page_type == "update") {
                         return redirect()->back()->with('doneMessage', 'Resource page updated successfully');
-                    else
+                    } else {
                         return redirect()->route('admin.contents.manage')->with('doneMessage', 'Resource page created successfully');
+                    }
                 }
             }
         } catch (Exception $e) {
-            if ($request->page_type == "update")
+            if ($request->page_type == "update") {
                 return redirect()->back()->with('errorMessage', 'Something went wrong please try after sometime');
-            else
+            } else {
                 return redirect()->route('admin.contents.manage')->with('errorMessage', 'Something went wrong please try after sometime');
+            }
         }
     }
     public function edit($id)
     {
-        if(!Auth::user()->hasPermission('content_management-update'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-update')) {
+            abort(403);
+        }
         $content_details = Content::where('id', $id)->first();
-        if ($content_details == null)
+        if ($content_details == null) {
             abort(404);
+        }
 
         $resource = Resource::with(['getBannerImageWeb', 'getBannerImageTab', 'getBannerImageMobile', 'getResourceMenu'])->where('content_id', $content_details->id)->first();
-        if ($resource == null)
+        if ($resource == null) {
             abort(404);
+        }
 
-        return view('dashboard.content-manager.resource.create', compact('content_details', 'resource'));
+        return view('dashboard.content-manager.resource.create', ['content_details' => $content_details, 'resource' => $resource]);
     }
     public function removeSection(Request $request)
     {
-        if(!Auth::user()->hasPermission('content_management-delete'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-delete')) {
+            abort(403);
+        }
         $menu = ResourceMenu::where('resource_uuid', $request->resource_uuid)->where('section_id', $request->section_id)->first();
         $card = ResourceCard::where('resource_menu_uuid', $menu->resource_menu_uuid)->first();
         $menu->delete();

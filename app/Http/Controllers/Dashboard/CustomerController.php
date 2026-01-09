@@ -30,8 +30,9 @@ class CustomerController extends Controller
 {
     public function uploadCustomers(Request $request)
     {
-        if (!Auth::user()->hasPermission('member_management-create'))
+        if (!Auth::user()->hasPermission('member_management-create')) {
             abort(403);
+        }
         ini_set("memory_limit", -1);
         ini_set('max_execution_time', '0');
         $validator = Validator::make($request->all(), [
@@ -52,20 +53,23 @@ class CustomerController extends Controller
     }
     public function createMember()
     {
-        if (!Auth::user()->hasPermission('member_management-create'))
+        if (!Auth::user()->hasPermission('member_management-create')) {
             abort(403);
+        }
         $country = Country::get();
         $packages = MembershipPackage::get();
-        return view('dashboard.customer-manager.create-member', compact('country', 'packages'));
+        return view('dashboard.customer-manager.create-member', ['country' => $country, 'packages' => $packages]);
     }
     public function storeMember(Request $request)
     {
-        if (!Auth::user()->hasPermission('member_management-create'))
+        if (!Auth::user()->hasPermission('member_management-create')) {
             abort(403);
+        }
         try {
             $packages = MembershipPackage::where('id', $request->package)->first();
-            if ($packages == null)
+            if ($packages == null) {
                 return redirect()->back()->with('errorMessage', 'Please choose any of the memberships package.')->withInput();
+            }
 
             $is_customer_exist = Customer::where('email', $request->email)->first();
             if ($is_customer_exist != null) {
@@ -109,8 +113,9 @@ class CustomerController extends Controller
             $customer->social_media_link = $request->social_media_link;
             $customer->save();
             if ($customer->save()) {
-                if($profile_pic!=null)
+                if ($profile_pic!=null) {
                     $request->profile_pic->move(public_path() . '/uploads/profile_pic', $profile_pic);
+                }
                 
                 
                 $details = [
@@ -131,12 +136,7 @@ class CustomerController extends Controller
                 $payment->save();
 
                 if ($payment->save()) {
-
-                    if ($packages->membership_plan == "yearly")
-                        $subscription_expired_on = Carbon::now()->addYear();
-                    else
-                        $subscription_expired_on = "2219-07-21";
-
+                    $subscription_expired_on = $packages->membership_plan == "yearly" ? Carbon::now()->addYear() : "2219-07-21";
                     $customer_subscriptions = new CustomerSubscription();
                     $customer_subscriptions->membership_id = $request->package;
                     $customer_subscriptions->customer_id = $customer->id;
@@ -144,12 +144,10 @@ class CustomerController extends Controller
                     $customer_subscriptions->subscription_in = 'admin member registration';
                     $customer_subscriptions->subscription_expired_on = $subscription_expired_on;
                     $customer_subscriptions->save();
-
                     $customer->current_subscription_status = 'a';
                     $customer->active_subscription = $request->package;
                     $customer->active_subscription_expired_on = $subscription_expired_on;
                     $customer->save();
-
                     // Membership mail
                     $details = [
                         'name' => $request->first_name,
@@ -174,13 +172,14 @@ class CustomerController extends Controller
     }
     public function memberDashboard(Request $request)
     {
-        if (!Auth::user()->hasPermission('member_management-read'))
+        if (!Auth::user()->hasPermission('member_management-read')) {
             abort(403);
+        }
 
 
         $search_customer = [];
         $all_customer = Customer::all();
-        if (count($all_customer)) {
+        if (count($all_customer) > 0) {
             foreach ($all_customer as $key => $cust) {
                 $search_customer[$key] = array(
                     'id' => $cust->id,
@@ -196,12 +195,12 @@ class CustomerController extends Controller
             ->pluck('year');
         $members = Customer::query();
         $members = $members->with(['getActiveSubscriptionDetails']);
-        if (!$request->has('restore')) {
-            if ($request->has('filter')) {
-                if ($request->subscription_status != null)
-                    $members = $members->where('current_subscription_status', $request->subscription_status);
-                if ($request->year != null)
-                    $members = $members->whereYear('created_at', $request->year);
+        if (!$request->has('restore') && $request->has('filter')) {
+            if ($request->subscription_status != null) {
+                $members = $members->where('current_subscription_status', $request->subscription_status);
+            }
+            if ($request->year != null) {
+                $members = $members->whereYear('created_at', $request->year);
             }
         }
 
@@ -220,10 +219,11 @@ class CustomerController extends Controller
                         }
                     }
                 }
-                if (count($matching_ids))
+                if (count($matching_ids)) {
                     $members = $members->whereIn('id', $matching_ids);
-                else
+                } else {
                     $members = $members->where('email', 'like', '%' . $search . '%');
+                }
             }
             $members = $members->paginate(5);
             return view('dashboard.customer-manager.member-card', ['members' => $members]);
@@ -231,44 +231,43 @@ class CustomerController extends Controller
 
         $members = $members->paginate(5);
         if (count($members) > 0) {
-            foreach ($members as $key => $value) {
+            foreach ($members as $value) {
                 $payment_amount = Payment::where('customer_id', $value->id)->where('subscription_id', $value->active_subscription)->whereNull('event_registartion_id')->orderBy('id', 'desc')->first();
-                if ($payment_amount == null || $payment_amount->total_amount == null)
-                    $value->amount = 0;
-                else
-                    $value->amount = $payment_amount->total_amount;
+                $value->amount = $payment_amount == null || $payment_amount->total_amount == null ? 0 : $payment_amount->total_amount;
 
                 $total_amount += $value->amount;
             }
         }
-        return view('dashboard.customer-manager.member-dashboard', compact('members', 'years', 'total_amount'));
+        return view('dashboard.customer-manager.member-dashboard', ['members' => $members, 'years' => $years, 'total_amount' => $total_amount]);
     }
     public function editMember($id)
     {
-        if (!Auth::user()->hasPermission('member_management-update'))
+        if (!Auth::user()->hasPermission('member_management-update')) {
             abort(403);
+        }
         $member = Customer::with(['getActiveSubscriptionDetails'])->where('id', $id)->first();
         $country = Country::get();
-        return view('dashboard.customer-manager.edit-member', compact('country', 'member'));
+        return view('dashboard.customer-manager.edit-member', ['country' => $country, 'member' => $member]);
     }
     public function updateMember(Request $request)
     {
-        if (!Auth::user()->hasPermission('member_management-update'))
+        if (!Auth::user()->hasPermission('member_management-update')) {
             abort(403);
+        }
         try {
             $check_customer = Customer::where('id', $request->id)->first();
-            if ($check_customer == null)
+            if ($check_customer == null) {
                 return redirect()->back()->with('errorMessage', 'Member not found!');
+            }
 
-            if ($request->password != null) {
-                if (Hash::check($request->password, $check_customer->password)) {
-                    return redirect()->back()->with('errorMessage', 'You\'ve used this Password before. Try again with a different Password.');
-                }
+            if ($request->password != null && Hash::check($request->password, $check_customer->password)) {
+                return redirect()->back()->with('errorMessage', 'You\'ve used this Password before. Try again with a different Password.');
             }
             if ($check_customer->email != $request->email) {
                 $check_mail = Customer::where('email', $request->email)->get();
-                if (count($check_mail) > 0)
+                if (count($check_mail) > 0) {
                     return redirect()->back()->with('errorMessage', 'Mail ID already exist!');
+                }
             }
             $token = Str::uuid()->toString();
             if (request()->hasFile('profile_pic')) {
@@ -298,19 +297,18 @@ class CustomerController extends Controller
                 $check_customer->email_token = $token;
             }
             $check_customer->country = $request->country;
-            if ($profile_pic != null)
-                $check_customer->profile_pic = $profile_pic;
-            if ($request->password != null)
-                $check_customer->password = Hash::make($request->password);
-            $check_customer->save();
             if ($profile_pic != null) {
-                if ($check_customer->save()) {
-                    if (file_exists(public_path() . '/uploads/profile_pic/' . $previous_pic)) {
-                        unlink(public_path() . '/uploads/profile_pic/' . $previous_pic);
-                    }
-                    
-                    $request->profile_pic->move(public_path() . '/uploads/profile_pic', $profile_pic);
+                $check_customer->profile_pic = $profile_pic;
+            }
+            if ($request->password != null) {
+                $check_customer->password = Hash::make($request->password);
+            }
+            $check_customer->save();
+            if ($profile_pic != null && $check_customer->save()) {
+                if (file_exists(public_path() . '/uploads/profile_pic/' . $previous_pic)) {
+                    unlink(public_path() . '/uploads/profile_pic/' . $previous_pic);
                 }
+                $request->profile_pic->move(public_path() . '/uploads/profile_pic', $profile_pic);
             }
 
             if ($check_customer->email != $request->email) {
@@ -328,26 +326,24 @@ class CustomerController extends Controller
     }
     public function exportMember(Request $request)
     {
-        if (!Auth::user()->hasPermission('member_management-read'))
+        if (!Auth::user()->hasPermission('member_management-read')) {
             abort(403);
+        }
         return Excel::download(new ExportMember($request->all()), 'members.xlsx');
     }
     public function viewMember(Request $request, $id)
     {
-        if (!Auth::user()->hasPermission('member_management-read'))
+        if (!Auth::user()->hasPermission('member_management-read')) {
             abort(403);
+        }
         $nomination = null;
         $customer_nomination = null;
         $type = $request->type;
 
-        if ($type == 'nomination') {
-            if ($request->position_uuid != null) {
-                $nomination = NominationPosition::with('getPosition')->where('uuid', $request->position_uuid)->first();
-                if ($nomination != null) {
-                    if ($request->member_id != null) {
-                        $customer_nomination = CustomerNomination::with('getMemberName')->where('nomination_uuid', $nomination->nomination_uuid)->where('nomination_position_uuid', $nomination->position_uuid)->where('member_id', $request->member_id)->first();
-                    }
-                }
+        if ($type == 'nomination' && $request->position_uuid != null) {
+            $nomination = NominationPosition::with('getPosition')->where('uuid', $request->position_uuid)->first();
+            if ($nomination != null && $request->member_id != null) {
+                $customer_nomination = CustomerNomination::with('getMemberName')->where('nomination_uuid', $nomination->nomination_uuid)->where('nomination_position_uuid', $nomination->position_uuid)->where('member_id', $request->member_id)->first();
             }
         }
 
@@ -359,15 +355,16 @@ class CustomerController extends Controller
         }
 
         $member_details = Customer::with(['getActiveSubscriptionDetails', 'getSubscriptionHistory', 'getPaymentHistory'])->where('id', $id)->first();
-        return view('dashboard.customer-manager.view-member', compact('member_details', 'nomination', 'customer_nomination', 'type'));
+        return view('dashboard.customer-manager.view-member', ['member_details' => $member_details, 'nomination' => $nomination, 'customer_nomination' => $customer_nomination, 'type' => $type]);
     }
     public function resendEmail(Request $request)
     {
         try {
             $token = Str::uuid()->toString();
             $check_customer = Customer::where('id', $request->customer_id)->first();
-            if ($check_customer == null)
+            if ($check_customer == null) {
                 abort(404);
+            }
 
             $check_customer->email_token = $token;
             $check_customer->save();

@@ -28,8 +28,9 @@ class ElectionController extends Controller
 {
     public function dashboard(Request $request)
     {
-        if (!Auth::user()->hasPermission('election_management-read'))
+        if (!Auth::user()->hasPermission('election_management-read')) {
             abort(403);
+        }
         $voting_position = [];
         if ($request->has('election')) {
             $votings = Voting::with(['getVotingPositions', 'getNominationDetails'])->where('uuid', $request->election)->first();
@@ -38,8 +39,9 @@ class ElectionController extends Controller
 
             $votings = Voting::with(['getVotingPositions', 'getNominationDetails'])->orderBy('id', 'desc')->first();
             // Get progress of voting poitions
-            if ($votings != null)
+            if ($votings != null) {
                 $voting_position = VotingPosition::with(['getNominationPositionDetails', 'getPositionDetails', 'getTotalVoting'])->where('voting_uuid', $votings->uuid)->get();
+            }
         }
 
         $all_votings = Voting::with(['getVotingPositions', 'getNominationDetails'])->orderBy('id', 'desc')->get();
@@ -67,13 +69,14 @@ class ElectionController extends Controller
             }
             $vote_progress_data[$key]['color'] =  $color_class[array_rand($color_class, 1)];
         }
-        return view('dashboard.election.dashboard', compact('votings', 'vote_progress_data', 'all_votings'));
+        return view('dashboard.election.dashboard', ['votings' => $votings, 'vote_progress_data' => $vote_progress_data, 'all_votings' => $all_votings]);
     }
 
     public function electionDetails(Request $request)
     {
-        if (!Auth::user()->hasPermission('election_management-read'))
+        if (!Auth::user()->hasPermission('election_management-read')) {
             abort(403);
+        }
         if ($request->uuid == '') {
             return redirect()->route('admin.election.dashboard')->with('errorMessage', 'Election Position not found');
         } else {
@@ -94,37 +97,36 @@ class ElectionController extends Controller
             $total_customer = Customer::whereHas('getActiveSubscriptionDetails', function ($query) {
                 $query->where('membership_name', 'not like', '%Corporate%');
             })->where('current_subscription_status', 'a')->where('nomination', 'yes')->count();
-            if (count($customer_votings)) {
+            if (count($customer_votings) > 0) {
                 foreach ($customer_votings as $key => $val) {
                     $customer_election_details = CustomerVoting::with('getVotedMemberDetails')->where('voting_position_uuid', $request->uuid)->where('member_id', $val)->first();
                     $customer_election_details_count = CustomerVoting::with('getVotedMemberDetails')->where('voting_position_uuid', $request->uuid)->where('member_id', $val)->count();
-                    if ($customer_election_details != null) {
-                        if ($customer_election_details->getVotedMemberDetails != null) {
-                            $total_vote_percentage = (($customer_election_details_count / $total_customer) * 100);
-                            $details[$key]['customer_name'] = $customer_election_details->getVotedMemberDetails->user_name;
-                            $details[$key]['customer_id'] = $customer_election_details->getVotedMemberDetails->id;
-                            $details[$key]['customer_image'] = $customer_election_details->getVotedMemberDetails->profile_pic;
-                            $details[$key]['social_media_link'] = $customer_election_details->getVotedMemberDetails->social_media_link;
-                            $details[$key]['total_vote'] = $customer_election_details_count;
-                            $details[$key]['total_vote_percentage'] = number_format(floatval($total_vote_percentage), 2, '.', '');
-                            $details[$key]['voting_position_uuid'] = $customer_election_details->voting_position_uuid;
-                        }
+                    if ($customer_election_details != null && $customer_election_details->getVotedMemberDetails != null) {
+                        $total_vote_percentage = (($customer_election_details_count / $total_customer) * 100);
+                        $details[$key]['customer_name'] = $customer_election_details->getVotedMemberDetails->user_name;
+                        $details[$key]['customer_id'] = $customer_election_details->getVotedMemberDetails->id;
+                        $details[$key]['customer_image'] = $customer_election_details->getVotedMemberDetails->profile_pic;
+                        $details[$key]['social_media_link'] = $customer_election_details->getVotedMemberDetails->social_media_link;
+                        $details[$key]['total_vote'] = $customer_election_details_count;
+                        $details[$key]['total_vote_percentage'] = number_format(floatval($total_vote_percentage), 2, '.', '');
+                        $details[$key]['voting_position_uuid'] = $customer_election_details->voting_position_uuid;
                     }
                 }
             }
-            return view('dashboard.election.election-details', compact('details', 'position_details', 'total_customer', 'voting_details', 'is_member_elected'));
+            return view('dashboard.election.election-details', ['details' => $details, 'position_details' => $position_details, 'total_customer' => $total_customer, 'voting_details' => $voting_details, 'is_member_elected' => $is_member_elected]);
         }
     }
 
     public function getChoosedMemberList($position_uuid, $member_id)
     {
-        if (!Auth::user()->hasPermission('election_management-read'))
+        if (!Auth::user()->hasPermission('election_management-read')) {
             abort(403);
+        }
         $customer_list = CustomerVoting::where('voting_position_uuid', $position_uuid)->where('member_id', $member_id)->with(['getVotingDetails', 'getVotingPositionDetails', 'getNominationDetails', 'getCustomerDetails'])->get();
         $election_details = CustomerVoting::where('voting_position_uuid', $position_uuid)->where('member_id', $member_id)->with(['getVotingDetails', 'getVotingPositionDetails', 'getNominationDetails', 'getCustomerDetails'])->first();
         $customer_details = Customer::whereId($member_id)->first();
-        if (count($customer_list)) {
-            return view('dashboard.election.election-customer-list', compact('customer_list', 'customer_details', 'position_uuid', 'member_id', 'election_details'));
+        if (count($customer_list) > 0) {
+            return view('dashboard.election.election-customer-list', ['customer_list' => $customer_list, 'customer_details' => $customer_details, 'position_uuid' => $position_uuid, 'member_id' => $member_id, 'election_details' => $election_details]);
         } else {
             abort(404);
         }
@@ -132,10 +134,11 @@ class ElectionController extends Controller
 
     public function electionContentManage(Request $request)
     {
-        if (!Auth::user()->hasPermission('election_management-read'))
+        if (!Auth::user()->hasPermission('election_management-read')) {
             abort(403);
+        }
         $content = VotingContent::first();
-        return view('dashboard.election.manage-content', compact('content'));
+        return view('dashboard.election.manage-content', ['content' => $content]);
     }
 
     public function electionCreateContent(Request $request)
@@ -143,8 +146,9 @@ class ElectionController extends Controller
 
         $content = VotingContent::first();
         if ($content == null) {
-            if (!Auth::user()->hasPermission('election_management-create'))
+            if (!Auth::user()->hasPermission('election_management-create')) {
                 abort(403);
+            }
             try {
                 VotingContent::create([
                     'heading' => $request->heading,
@@ -160,8 +164,9 @@ class ElectionController extends Controller
                 return redirect()->back()->with('errorMessage', 'Something went wrong please try after sometime');
             }
         } else {
-            if (!Auth::user()->hasPermission('election_management-update'))
+            if (!Auth::user()->hasPermission('election_management-update')) {
                 abort(403);
+            }
             try {
 
                 VotingContent::whereId($content->id)->update([
@@ -182,13 +187,14 @@ class ElectionController extends Controller
 
     public function createElection(Request $request)
     {
-        if (!Auth::user()->hasPermission('election_management-create'))
+        if (!Auth::user()->hasPermission('election_management-create')) {
             abort(403);
+        }
         // Get unique nomination of accepted list
         $nominations_accepted = NominationAcceptList::groupBy('nomination_uuid')->pluck('nomination_uuid')->toArray();
         // Get Nomination details
         $nominations = Nomination::whereIn('uuid', $nominations_accepted)->get();
-        return view('dashboard.election.create', compact('nominations'));
+        return view('dashboard.election.create', ['nominations' => $nominations]);
     }
 
     public function getAvailableElectionPosition(Request $request)
@@ -196,7 +202,7 @@ class ElectionController extends Controller
         try {
             if ($request->nomination_uuid != '') {
                 $is_voting_created = Voting::where('nomination_uuid', $request->nomination_uuid)->pluck('uuid')->toArray();
-                if (count($is_voting_created)) {
+                if (count($is_voting_created) > 0) {
                     $positions = VotingPosition::whereIn('voting_uuid', $is_voting_created)->pluck('nomination_position_uuid')->toArray();
                     $finalpositions = NominationPosition::whereNotIn('uuid', $positions)->where('nomination_uuid', $request->nomination_uuid)->with('getPosition')->get();
                 } else {
@@ -214,8 +220,9 @@ class ElectionController extends Controller
 
     public function storeElection(Request $request)
     {
-        if (!Auth::user()->hasPermission('election_management-create'))
+        if (!Auth::user()->hasPermission('election_management-create')) {
             abort(403);
+        }
         $validator = Validator::make($request->all(), [
             'nomination' => 'required',
             'nomination_position' => 'required',
@@ -253,14 +260,16 @@ class ElectionController extends Controller
     }
     public function electionPositionExport(Request $request)
     {
-        if (!Auth::user()->hasPermission('election_management-read'))
+        if (!Auth::user()->hasPermission('election_management-read')) {
             abort(403);
+        }
         return Excel::download(new ExportElectionPosition($request->voting_position_uuid), 'election-postion.xlsx');
     }
     public function customerElectionExport(Request $request)
     {
-        if (!Auth::user()->hasPermission('election_management-read'))
+        if (!Auth::user()->hasPermission('election_management-read')) {
             abort(403);
+        }
         return Excel::download(new ExportCustomerElection($request->voting_position_uuid, $request->member_id), 'customer-election.xlsx');
     }
 

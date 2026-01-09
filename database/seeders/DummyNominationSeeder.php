@@ -44,7 +44,8 @@ class DummyNominationSeeder extends Seeder
             try {
 
                 $member_ship_type = ['A-PBA Office-bearers', 'Committee Members', 'Honorary Auditors'];
-                for ($i = 0; $i < count($member_ship_type); $i++) {
+                $counter = count($member_ship_type);
+                for ($i = 0; $i < $counter; $i++) {
                     $is_membership_create = MembershipType::create([
                         'uuid' => Str::uuid()->toString(),
                         'membership_type' => $member_ship_type[$i],
@@ -62,7 +63,7 @@ class DummyNominationSeeder extends Seeder
 
                 $all_member_ship_types = MembershipType::where('status', '1')->get();
                 $position_arr = ['President', 'Vice President', 'Secretary', 'Assistant Secretary', 'Treasurer'];
-                if (count($all_member_ship_types)) {
+                if (count($all_member_ship_types) > 0) {
                     foreach ($all_member_ship_types as $val) {
                         foreach ($position_arr as $value) {
                             MembershipPosition::create([
@@ -84,7 +85,8 @@ class DummyNominationSeeder extends Seeder
             try {
 
                 $nomination_names = ['President of 2023', 'Vice President of 2023', 'Secretary of 2023'];
-                for ($i = 0; $i <count($nomination_names); $i++) {
+                $counter = count($nomination_names);
+                for ($i = 0; $i <$counter; $i++) {
                     $is_nomination_create = Nomination::create([
                         'uuid' => Str::uuid()->toString(),
                         'name' => $nomination_names[$i],

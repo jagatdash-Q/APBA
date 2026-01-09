@@ -23,16 +23,18 @@ class RoleController extends Controller
     }
     public function manageRoles(Request $request)
     {
-        if (!Auth::user()->hasPermission('role-read'))
+        if (!Auth::user()->hasPermission('role-read')) {
             abort(403);
+        }
         $roles = Role::all();
-        return view('dashboard.role-manager.index', compact('roles'));
+        return view('dashboard.role-manager.index', ['roles' => $roles]);
     }
 
     public function editRole(Request $request, $id)
     {
-        if (!Auth::user()->hasPermission('role-update'))
+        if (!Auth::user()->hasPermission('role-update')) {
             abort(403);
+        }
         // get All permissions
         $permissions = Permission::all();
         $role_details = Role::with('getPermissions')->whereId($id)->first();
@@ -40,7 +42,7 @@ class RoleController extends Controller
             if ($role_details->display_name == 'Superadmin') {
                 return redirect()->back()->with('infoMessage', "System reserved role can't be editable");
             } else {
-                return view('dashboard.role-manager.edit-role', compact('permissions', 'role_details'));
+                return view('dashboard.role-manager.edit-role', ['permissions' => $permissions, 'role_details' => $role_details]);
             }
         } else {
             abort(404);
@@ -49,8 +51,9 @@ class RoleController extends Controller
 
     public function updateRole(Request $request)
     {
-        if (!Auth::user()->hasPermission('role-update'))
+        if (!Auth::user()->hasPermission('role-update')) {
             abort(403);
+        }
         $role = Role::whereId($request->role_id)->first();
         if ($role != null) {
             if (count((array)$request->permissions)) {
@@ -66,16 +69,18 @@ class RoleController extends Controller
 
     public function createRole(Request $request)
     {
-        if (!Auth::user()->hasPermission('role-create'))
+        if (!Auth::user()->hasPermission('role-create')) {
             abort(403);
+        }
         $permissions = Permission::all();
-        return view('dashboard.role-manager.create-role', compact('permissions'));
+        return view('dashboard.role-manager.create-role', ['permissions' => $permissions]);
     }
 
     public function storeRole(Request $request)
     {
-        if (!Auth::user()->hasPermission('role-create'))
+        if (!Auth::user()->hasPermission('role-create')) {
             abort(403);
+        }
         $role = Role::where('name', strtolower($request->role_name))->first();
         if ($role == null) {
             if (count((array)$request->permissions)) {
@@ -97,25 +102,24 @@ class RoleController extends Controller
 
     public function deleteRole(Request $request)
     {
-        if (!Auth::user()->hasPermission('role-delete'))
+        if (!Auth::user()->hasPermission('role-delete')) {
             abort(403);
+        }
         $role = Role::whereId($request->role_id)->first();
         if ($role == null) {
             return ['status' => 'error', 'message' => 'role not found'];
-        } else {
+        } elseif ($role->display_name == 'Superadmin') {
             // Check if the role is superadmin
-            if ($role->display_name == 'Superadmin') {
-                return ['status' => 'error', 'message' => "System reserved role can't be deleted"];
+            return ['status' => 'error', 'message' => "System reserved role can't be deleted"];
+        } else {
+            // Check if user assigned to this role
+            $is_users_assigned = RoleUser::where('role_id', $request->role_id)->count();
+            if ($is_users_assigned) {
+                return ['status' => 'error', 'message' => "Users were assigned in this role so it can't be deleted"];
             } else {
-                // Check if user assigned to this role
-                $is_users_assigned = RoleUser::where('role_id', $request->role_id)->count();
-                if ($is_users_assigned) {
-                    return ['status' => 'error', 'message' => "Users were assigned in this role so it can't be deleted"];
-                } else {
-                    Role::whereId($request->role_id)->delete();
-                    PermissionRole::where('role_id', $request->role_id)->delete();
-                    return ['status' => 'success', 'message' => "Role deleted successfully"];
-                }
+                Role::whereId($request->role_id)->delete();
+                PermissionRole::where('role_id', $request->role_id)->delete();
+                return ['status' => 'success', 'message' => "Role deleted successfully"];
             }
         }
     }

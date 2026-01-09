@@ -30,8 +30,9 @@ class EventDetailsController extends Controller
 
 
 
-        if ($event_details == null)
+        if ($event_details == null) {
             abort(404);
+        }
 
         $event_speakers = EventSpeakers::where('event_id', $event_details->id)->with('getSpeakerImage')->paginate(6);
         $total_speaker_count = EventSpeakers::where('event_id', $event_details->id)->count();
@@ -39,8 +40,9 @@ class EventDetailsController extends Controller
         $current_date = Carbon::now()->startOfDay();
         $end_date = Carbon::parse($event_details->end_date)->startOfDay();
         $is_reg_valid = true;
-        if ($current_date->gt($end_date) || $event_details->activities_status == "0")
+        if ($current_date->gt($end_date) || $event_details->activities_status == "0") {
             $is_reg_valid = false;
+        }
 
         if ($request->ajax()) {
 
@@ -66,26 +68,27 @@ class EventDetailsController extends Controller
             return ['status' => 'success', 'data' => $data, 'current_page_data' => count($event_speakers), 'has_new_page' => $event_speakers->hasMorePages()];
         }
 
-        return view('frontend.events.event_details', compact('event_details', 'event_speakers', 'total_speaker_count', 'is_reg_valid'));
+        return view('frontend.events.event_details', ['event_details' => $event_details, 'event_speakers' => $event_speakers, 'total_speaker_count' => $total_speaker_count, 'is_reg_valid' => $is_reg_valid]);
     }
     public function featuredSpeakerDetails($id)
     {
         $speaker_details = EventSpeakers::where('id', $id)->with('getSpeakerImage')->first();
-        if ($speaker_details == null)
+        if ($speaker_details == null) {
             abort(404);
+        }
 
-        return view('frontend.events.featured_speaker_details', compact('speaker_details'));
+        return view('frontend.events.featured_speaker_details', ['speaker_details' => $speaker_details]);
     }
     public function eventRegister($uuid)
     {
-        $date = [];
         $event_details = Event::where('is_news', 0)->where('uid', $uuid)->with(['GetEventWorkshops', 'getEventWorkshopOptional'])
             // ->whereDate('start_date', '<=', Carbon::now()->format('Y-m-d'))->whereDate('end_date', '>=', Carbon::now()->format('Y-m-d'))
             ->first();
-        if ($event_details == null)
+        if ($event_details == null) {
             abort(404);
+        }
 
-        return view('frontend.events.event_register', compact('event_details'));
+        return view('frontend.events.event_register', ['event_details' => $event_details]);
     }
     public function checkProgram(Request $request)
     {
@@ -107,6 +110,7 @@ class EventDetailsController extends Controller
             }
             return $id;
         }
+        return null;
     }
     public function eventRegistration(Request $request, CustomerController $customerController)
     {
@@ -144,14 +148,12 @@ class EventDetailsController extends Controller
             if ($event_reg->save()) {
                 if ($request->optional_id != null) {
                     $optional_id = explode(",", $request->optional_id);
-                    if (count($optional_id) > 0) {
-                        foreach ($optional_id as $value) {
-                            $event_registration_optionals = new EventRegistrationOptional();
-                            $event_registration_optionals->uuid = Str::uuid()->toString();
-                            $event_registration_optionals->event_registration_id = $event_reg->id;
-                            $event_registration_optionals->event_workshop_optional_id = $value;
-                            $event_registration_optionals->save();
-                        }
+                    foreach ($optional_id as $value) {
+                        $event_registration_optionals = new EventRegistrationOptional();
+                        $event_registration_optionals->uuid = Str::uuid()->toString();
+                        $event_registration_optionals->event_registration_id = $event_reg->id;
+                        $event_registration_optionals->event_workshop_optional_id = $value;
+                        $event_registration_optionals->save();
                     }
                 }
 
@@ -160,32 +162,30 @@ class EventDetailsController extends Controller
                 // $networking_dinner_fee_id = explode(",", $request->networking_dinner_fee_id);
                 if ($request->program_id != null) {
                     $programs = explode(",", $request->program_id);
-                    if (count($programs) > 0) {
-                        foreach ($programs as $id) {
-                            $get_program = EventWorkshopPrograms::where('id', $id)->first();
-                            // if (in_array($get_program->event_workshop_id, $conference_registration_id)) {
-                            //     $workshop_conference_registration_fee = EventWorkshop::where('id', $get_program->event_workshop_id)->first();
-                            //     $conference_registration_fee = $workshop_conference_registration_fee->conference_registration_fee;
-                            // } else {
-                            //     $conference_registration_fee = null;
-                            // }
+                    foreach ($programs as $id) {
+                        $get_program = EventWorkshopPrograms::where('id', $id)->first();
+                        // if (in_array($get_program->event_workshop_id, $conference_registration_id)) {
+                        //     $workshop_conference_registration_fee = EventWorkshop::where('id', $get_program->event_workshop_id)->first();
+                        //     $conference_registration_fee = $workshop_conference_registration_fee->conference_registration_fee;
+                        // } else {
+                        //     $conference_registration_fee = null;
+                        // }
 
-                            // if (in_array($get_program->event_workshop_id, $networking_dinner_fee_id)) {
-                            //     $workshop_networking_dinner_fee = EventWorkshop::where('id', $get_program->event_workshop_id)->first();
-                            //     $networking_dinner_fee = $workshop_networking_dinner_fee->networking_dinner_fee;
-                            // } else {
-                            //     $networking_dinner_fee = null;
-                            // }
-                            if ($get_program != null) {
-                                $event_program_registration = new EventProgramRegistration();
-                                $event_program_registration->uuid = Str::uuid()->toString();
-                                $event_program_registration->event_registration_uuid = $event_reg->uuid;
-                                $event_program_registration->event_workshop_id = $get_program->event_workshop_id;
-                                $event_program_registration->event_program_id = $id;
-                                // $event_program_registration->conference_registration_fee = $conference_registration_fee;
-                                // $event_program_registration->networking_dinner_fee = $networking_dinner_fee;
-                                $event_program_registration->save();
-                            }
+                        // if (in_array($get_program->event_workshop_id, $networking_dinner_fee_id)) {
+                        //     $workshop_networking_dinner_fee = EventWorkshop::where('id', $get_program->event_workshop_id)->first();
+                        //     $networking_dinner_fee = $workshop_networking_dinner_fee->networking_dinner_fee;
+                        // } else {
+                        //     $networking_dinner_fee = null;
+                        // }
+                        if ($get_program != null) {
+                            $event_program_registration = new EventProgramRegistration();
+                            $event_program_registration->uuid = Str::uuid()->toString();
+                            $event_program_registration->event_registration_uuid = $event_reg->uuid;
+                            $event_program_registration->event_workshop_id = $get_program->event_workshop_id;
+                            $event_program_registration->event_program_id = $id;
+                            // $event_program_registration->conference_registration_fee = $conference_registration_fee;
+                            // $event_program_registration->networking_dinner_fee = $networking_dinner_fee;
+                            $event_program_registration->save();
                         }
                     }
                 }
@@ -204,9 +204,10 @@ class EventDetailsController extends Controller
     public function newsDetails(Request $request, $slug)
     {
         $news_details = Event::where('is_news', 1)->where('event_slug', $slug)->with(['getFeaturedImage'])->first();
-        if ($news_details == null)
+        if ($news_details == null) {
             abort(404);
+        }
 
-        return view('frontend.events.news_details', compact('news_details'));
+        return view('frontend.events.news_details', ['news_details' => $news_details]);
     }
 }

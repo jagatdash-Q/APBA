@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @method static \Database\Factories\ResourceCardFactory factory(...$parameters)
+ */
 class ResourceCard extends Model
 {
     use HasFactory, SoftDeletes;

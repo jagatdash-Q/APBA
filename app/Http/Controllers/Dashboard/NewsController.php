@@ -15,22 +15,25 @@ class NewsController extends Controller
 {
     public function manageNews(Request $request)
     {
-        if (!Auth::user()->hasPermission('news_management-read'))
+        if (!Auth::user()->hasPermission('news_management-read')) {
             abort(403);
+        }
         $news = Event::where('is_news', 1)->with('getFeaturedImage')->paginate(10);
 
         return view('dashboard.news-manage.index', ['news' => $news]);
     }
     public function createNews(Request $request)
     {
-        if (!Auth::user()->hasPermission('news_management-create'))
+        if (!Auth::user()->hasPermission('news_management-create')) {
             abort(403);
+        }
         return view('dashboard.news-manage.create');
     }
     public function storeNews(Request $request)
     {
-        if (!Auth::user()->hasPermission('news_management-create'))
+        if (!Auth::user()->hasPermission('news_management-create')) {
             abort(403);
+        }
         try {
             $news = new Event();
             $news->uid = Str::uuid()->toString();
@@ -58,8 +61,9 @@ class NewsController extends Controller
     }
     public function deleteNews(Request $request)
     {
-        if (!Auth::user()->hasPermission('news_management-delete'))
+        if (!Auth::user()->hasPermission('news_management-delete')) {
             abort(403);
+        }
         try {
             $news = Event::where('uid', $request->uuid)->first();
             $news->deleted_by = Auth::id();
@@ -72,21 +76,25 @@ class NewsController extends Controller
     }
     public function editNews($uuid)
     {
-        if (!Auth::user()->hasPermission('news_management-update'))
+        if (!Auth::user()->hasPermission('news_management-update')) {
             abort(403);
+        }
         $news = Event::where('is_news', 1)->with('getFeaturedImage')->where('uid', $uuid)->first();
-        if ($news == null)
+        if ($news == null) {
             abort(404);
+        }
         return view('dashboard.news-manage.edit', ['news' => $news]);
     }
     public function updateNews(Request $request)
     {
-        if (!Auth::user()->hasPermission('news_management-update'))
+        if (!Auth::user()->hasPermission('news_management-update')) {
             abort(403);
+        }
         try {
             $news = Event::where('is_news', 1)->where('uid', $request->uuid)->first();
-            if ($news == null)
+            if ($news == null) {
                 abort(404);
+            }
             $news->event_name = $request->news_name;
             $news->event_slug = $request->news_slug;
             $news->status = $request->submit;

@@ -38,16 +38,18 @@ class OurTeamController extends Controller
 
     public function index()
     {
-        if (!Auth::user()->hasPermission('our_team-read'))
+        if (!Auth::user()->hasPermission('our_team-read')) {
             abort(403);
+        }
         $OurTeams = OurTeam::orderby('updated_at', 'desc')->with('userDetails', 'ourTeamListing', 'lockAcquiredUser', 'teamContent')->paginate(10);
         // General END
-        return view('dashboard.our_teams.list', compact("OurTeams"));
+        return view('dashboard.our_teams.list', ['OurTeams' => $OurTeams]);
     }
     public function create(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-create'))
+        if (!Auth::user()->hasPermission('our_team-create')) {
             abort(403);
+        }
         // return view('dashboard.our_teams.create');
         if (OurTeam::first() == null) {
             $menu_list_msg = '';
@@ -59,8 +61,9 @@ class OurTeamController extends Controller
 
     public function store(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-create'))
+        if (!Auth::user()->hasPermission('our_team-create')) {
             abort(403);
+        }
         if (OurTeam::first() == null) {
             $validator = Validator::make($request->all(), [
                 'page_name' => 'required',
@@ -139,8 +142,9 @@ class OurTeamController extends Controller
 
     public function edit($uid)
     {
-        if (!Auth::user()->hasPermission('our_team-update'))
-        abort(403);
+        if (!Auth::user()->hasPermission('our_team-update')) {
+            abort(403);
+        }
         $our_team = OurTeam::where('uid', $uid)->with('userDetails', 'getOurTeamContent', 'lockAcquiredUser', 'ourTeamListing')->first();
         if ($our_team == null) {
             return view('dashboard.our_teams.list', "our_team")->with('errorMessage', 'Our Teams not found');
@@ -148,14 +152,15 @@ class OurTeamController extends Controller
         if ($our_team->getOurTeamContent == null) {
             return view('dashboard.our_teams.list', "our_team")->with('errorMessage', 'Our Teams not found');
         }
-        return view('dashboard.our_teams.edit', compact("our_team"));
+        return view('dashboard.our_teams.edit', ['our_team' => $our_team]);
     }
 
 
     public function update(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-update'))
+        if (!Auth::user()->hasPermission('our_team-update')) {
             abort(403);
+        }
         // dd($request->all());
         $validator = Validator::make($request->all(), [
             'page_name' => 'required',
@@ -175,8 +180,7 @@ class OurTeamController extends Controller
         $contents['content_status'] = (string)$request->submit;
         $contents['page_type'] = 'our_teams';
         $contents['edited_by'] = Auth::id();
-        $content_details = OurTeam::where('uid', $request->uid)->update($contents);
-        $our_team_content = [];
+        OurTeam::where('uid', $request->uid)->update($contents);
         $form_data = array(
             'page_name' => $request->page_name,
             'page_slug' => $this->slugify($request->page_name),
@@ -212,7 +216,7 @@ class OurTeamController extends Controller
             'button_name_top_pos_mobile' => (float)$request->button_name_top_pos_mobile_,
             'status' => (int)$request->submit
         );
-        $our_team_contents = OurTeamContent::where('our_teams_uid', $request->uid)->update($form_data);
+        OurTeamContent::where('our_teams_uid', $request->uid)->update($form_data);
         // End of our_teams content
         return redirect()->action('Dashboard\OurTeamController@index')->with('doneMessage', __('Our team content updated successfully'));
     }
@@ -222,8 +226,9 @@ class OurTeamController extends Controller
 
     public function delete(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-delete'))
+        if (!Auth::user()->hasPermission('our_team-delete')) {
             abort(403);
+        }
         $OurTeam = OurTeam::where('uid', $request->uid)->first();
         if ($OurTeam == null) {
             return ['status' => 'error', 'message' => 'Someting went wrong. OurTeam not found!'];

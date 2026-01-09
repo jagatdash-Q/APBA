@@ -72,6 +72,7 @@ class LaratrustSeeder extends Seeder
             }
 
         }
+        return null;
     }
 
     /**

@@ -43,16 +43,15 @@ class CustomerAuthController extends Controller
         if($is_customer_exist==null){
             return redirect()->route('frontend.home')->with('errorMessage', 'Invalid email');
         }else{
-            if($is_customer_exist->is_verify_email=='0')
+            if ($is_customer_exist->is_verify_email=='0') {
                 return redirect()->route('frontend.home')->with('errorMessage', 'Please verify your email first');
-            if($is_customer_exist->password==''){
+            }
+            if ($is_customer_exist->password=='') {
                 return redirect()->route('frontend.home')->with('errorMessage', 'Your password has been expired please reset your password');
-            }else{
-                if (Auth::guard('customer')->attempt(['email' => $request->email, 'password' => $request->password])) {
-                    return redirect()->route('customer.home');
-                } else {
-                    return redirect()->route('frontend.home')->with('errorMessage', 'Incorrect credentials');
-                }
+            } elseif (Auth::guard('customer')->attempt(['email' => $request->email, 'password' => $request->password])) {
+                return redirect()->route('customer.home');
+            } else {
+                return redirect()->route('frontend.home')->with('errorMessage', 'Incorrect credentials');
             }
         }
     }

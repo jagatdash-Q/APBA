@@ -30,26 +30,28 @@ class ExportCustomerElection implements FromCollection, WithHeadings, WithEvents
 
         $customer_list = CustomerVoting::where('voting_position_uuid', $uuid)->where('member_id', $member_id)->with(['getVotingDetails', 'getVotingPositionDetails', 'getNominationDetails', 'getCustomerDetails'])->get();
 
-        if (count($customer_list)) {
+        if (count($customer_list) > 0) {
 
             foreach ($customer_list as $member) {
 
 
                 if (isset($member->getCustomerDetails)) {
 
-                    if ($member->getCustomerDetails->current_subscription_status == 'a')
+                    if ($member->getCustomerDetails->current_subscription_status == 'a') {
                         $status = "Active";
-                    elseif ($member->getCustomerDetails->current_subscription_status == 'p')
+                    } elseif ($member->getCustomerDetails->current_subscription_status == 'p') {
                         $status = "Pending";
-                    elseif ($member->getCustomerDetails->current_subscription_status == 'e')
+                    } elseif ($member->getCustomerDetails->current_subscription_status == 'e') {
                         $status = "Expire";
-                    else
+                    } else {
                         $status = "";
+                    }
 
-                    if (isset($member->getCustomerDetails->getActiveSubscriptionDetails))
+                    if (isset($member->getCustomerDetails->getActiveSubscriptionDetails)) {
                         $membership_name = $member->getCustomerDetails->getActiveSubscriptionDetails->membership_name == null ? null : $member->getCustomerDetails->getActiveSubscriptionDetails->membership_name;
-                    else
+                    } else {
                         $membership_name = null;
+                    }
 
 
                     $temp_data[] = [$member->getCustomerDetails->first_name . " " . $member->getCustomerDetails->last_name, $member->getCustomerDetails->email, $member->getCustomerDetails->is_verify_email == '0' ? 'No' : 'Yes', $member->getCustomerDetails->nomination, $membership_name, $status, Carbon::parse($member->getCustomerDetails->active_subscription_expired_on)->format('d F Y')];
@@ -70,29 +72,34 @@ class ExportCustomerElection implements FromCollection, WithHeadings, WithEvents
         $customer_details = Customer::whereId($member_id)->first();
         if ($election_details != null) {
             $title = "Election Start & End Date: ";
-            if (isset($election_details->getVotingDetails))
+            if (isset($election_details->getVotingDetails)) {
                 $title .= Carbon::parse($election_details->getVotingDetails->start_date)->format('d F Y');
+            }
             $title .= " to ";
-            if (isset($election_details->getVotingDetails))
+            if (isset($election_details->getVotingDetails)) {
                 $title .= Carbon::parse($election_details->getVotingDetails->end_date)->format('d F Y');
+            }
             $title .= "\n Nomination Name: ";
-            if (isset($election_details->getNominationDetails))
+            if (isset($election_details->getNominationDetails)) {
                 $title .= $election_details->getNominationDetails->name;
+            }
             $title .= "\n Membership Type: ";
-            if (isset($election_details->getVotingPositionDetails))
-                if (isset($election_details->getVotingPositionDetails->getNominationPositionDetails))
-                    if (isset($election_details->getVotingPositionDetails->getNominationPositionDetails->getPosition))
-                        if (isset($election_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->getMembershipType))
-                            $title .= $election_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->getMembershipType->membership_type;
+            if (isset($election_details->getVotingPositionDetails) && isset($election_details->getVotingPositionDetails->getNominationPositionDetails)) {
+                if (isset($election_details->getVotingPositionDetails->getNominationPositionDetails->getPosition) && isset($election_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->getMembershipType)) {
+                    $title .= $election_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->getMembershipType->membership_type;
+                }
+            }
             $title .= "\n Position: ";
-            if ($election_details->getVotingPositionDetails != null)
-                if ($election_details->getVotingPositionDetails->getNominationPositionDetails != null)
-                    if ($election_details->getVotingPositionDetails->getNominationPositionDetails->getPosition != null)
-                        $title .= $election_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->membership_position;
+            if ($election_details->getVotingPositionDetails != null && $election_details->getVotingPositionDetails->getNominationPositionDetails != null) {
+                if ($election_details->getVotingPositionDetails->getNominationPositionDetails->getPosition != null) {
+                    $title .= $election_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->membership_position;
+                }
+            }
 
             $title .= "\n Member Name: ";
-            if ($customer_details != null)
+            if ($customer_details != null) {
                 $title .= $customer_details->user_name;
+            }
         } else {
             $title = ' ';
         }

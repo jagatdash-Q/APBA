@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Factory helper for static analysis
+ *
+ * @method static \Database\Factories\SurveyActivityFactory factory(...$parameters)
+ *
+ * @property-read \App\Models\EventWorkshopOptional|null $getEventOptional
+ * @property-read \App\Models\EventWorkshopPrograms|null $getEventProgram
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SurveyRegistration> $getSurveyRegistration
+ */
 class SurveyActivity extends Model
 {
     use HasFactory, SoftDeletes;
@@ -24,7 +33,7 @@ class SurveyActivity extends Model
 
     public function getEventOptional(): HasOne
     {
-        return $this->hasOne(EventWorkshopOptional::class, 'id', 'event_workshop_optional_id')->With('getEvent');
+        return $this->hasOne(EventWorkshopOptional::class, 'id', 'event_workshop_optional_id')->with('getEvent');
     }
 
     public function getSurveyRegistration(): HasMany

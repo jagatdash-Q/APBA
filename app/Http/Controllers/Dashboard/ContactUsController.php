@@ -17,11 +17,11 @@ class ContactUsController extends Controller
     public function store(Request $request)
     {
         if ($request->page_type == "update") {
-            if (!Auth::user()->hasPermission('content_management-update'))
+            if (!Auth::user()->hasPermission('content_management-update')) {
                 abort(403);
-        } else {
-            if (!Auth::user()->hasPermission('content_management-create'))
-                abort(403);
+            }
+        } elseif (!Auth::user()->hasPermission('content_management-create')) {
+            abort(403);
         }
 
         try {
@@ -73,30 +73,35 @@ class ContactUsController extends Controller
                     'content_status' => '1'
                 );
                 Content::whereId($request->content_id)->update($data);
-                if ($request->page_type == "update")
+                if ($request->page_type == "update") {
                     return redirect()->back()->with('doneMessage', 'Contact us page updated successfully');
-                else
+                } else {
                     return redirect()->route('admin.contents.manage')->with('doneMessage', 'Contact us page created successfully');
+                }
             }
         } catch (Exception $e) {
-            if ($request->page_type == "update")
+            if ($request->page_type == "update") {
                 return redirect()->back()->with('errorMessage', 'Something went wrong please try after sometime');
-            else
+            } else {
                 return redirect()->route('admin.contents.manage')->with('errorMessage', 'Something went wrong please try after sometime');
+            }
         }
     }
     public function edit($id)
     {
-        if(!Auth::user()->hasPermission('content_management-update'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-update')) {
+            abort(403);
+        }
         $content_details = Content::where('id', $id)->first();
-        if ($content_details == null)
+        if ($content_details == null) {
             abort(404);
+        }
 
         $contact_us = ContactUs::with(['getBannerImageWeb', 'getBannerImageTab', 'getBannerImageMobile', 'getResourceMenu'])->where('content_id', $content_details->id)->first();
-        if ($contact_us == null)
+        if ($contact_us == null) {
             abort(404);
+        }
 
-        return view('dashboard.content-manager.contact_us.index', compact('content_details', 'contact_us'));
+        return view('dashboard.content-manager.contact_us.index', ['content_details' => $content_details, 'contact_us' => $contact_us]);
     }
 }

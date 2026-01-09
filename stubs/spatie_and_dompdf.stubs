@@ -1,0 +1,16 @@
+<?php
+
+// Minimal stubs for external packages to satisfy static analysis
+
+namespace Barryvdh\DomPDF;
+
+use Illuminate\Support\Facades\Facade as BaseFacade;
+
+class Facade extends BaseFacade
+{
+}
+
+namespace Spatie\Permission\Models;
+
+class Permission {}
+class Role {}

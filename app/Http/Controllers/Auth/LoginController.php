@@ -65,8 +65,9 @@ class LoginController extends Controller
         }
 
         $user = User::where('email', $request->email)->first();
-        if ($user == null)
+        if ($user == null) {
             return redirect()->back()->with('errorMessage', 'These credentials do not match our records.');
+        }
         if ($user && Hash::check($request->password, $user->password)) {
             $login_data = $request->all();
             if ($user['2fa_status'] == '0' && $user->google2fa_secret == null) {
@@ -84,8 +85,9 @@ class LoginController extends Controller
             }
             $request->session()->flash('login_data', $login_data);
             return view('auth.google2fa', ['email' => $request->email, 'status' => $user['2fa_status'], 'QR_Image' => $QR_Image, 'secret' => $secret]);
-        } else
+        } else {
             return redirect()->back()->with('errorMessage', 'These credentials do not match our records.');
+        }
     }
 
     public function validate_login(Request $request)

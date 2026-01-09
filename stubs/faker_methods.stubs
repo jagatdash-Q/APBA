@@ -1,0 +1,13 @@
+<?php
+
+namespace Faker;
+
+/**
+ * Minimal stub for Faker\Generator so PHPStan recognizes common methods used in factories
+ */
+class Generator
+{
+    public function name(): string {}
+    public function safeEmail(): string {}
+    public function unique(): self {}
+}

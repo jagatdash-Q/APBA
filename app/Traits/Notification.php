@@ -43,13 +43,12 @@ trait Notification
             if (count($user_list) > 0) {
                 foreach ($user_list as $user) {
                     $notification['receiver_id'] = $user->id;
-                    array_push($res, NotificationModel::create($notification));
+                    $res[] = NotificationModel::create($notification);
                 }
             }
             return $res;
         } else {
-            $res = NotificationModel::create($notification);
-            return $res;
+            return NotificationModel::create($notification);
         }
     }
 
@@ -57,7 +56,7 @@ trait Notification
     {
         // Check for 3 days notification
 
-        $date = Carbon::today()->subDay(3)->toDateString();
+        $date = Carbon::today()->subDay()->toDateString();
 
         $notification_cron_3 = NotificationModel::where('status', '1')->where('notification_type', 'approval')->where('noti_send_at', '=', $date)->where('noti_cron', '0')->with('pageDetails', 'senderDetails', 'receiverDetails')->groupBy('content_id')->get();
 
@@ -83,7 +82,7 @@ trait Notification
         }
 
         // Checking for 7 days notifications
-        $date = Carbon::today()->subDay(7)->toDateString();
+        $date = Carbon::today()->subDay()->toDateString();
         $notification_cron_7 = NotificationModel::where('status', '1')->where('notification_type', 'approval')->where('noti_send_at', '=', $date)->where('noti_cron', '1')->with('pageDetails', 'senderDetails', 'receiverDetails')->get();
 
 
@@ -113,7 +112,7 @@ trait Notification
     {
         // Check for 3 days notification
 
-        $date = Carbon::today()->subDay(3)->toDateString();
+        $date = Carbon::today()->subDay()->toDateString();
         $notification_cron_3 = NotificationModel::where('status', '1')->where('notification_type', 'approval')->where('noti_send_at', '=', $date)->where('noti_email_cron', '0')->with('pageDetails', 'senderDetails', 'receiverDetails')->get();
 
         if (count($notification_cron_3) > 0) {
@@ -133,14 +132,14 @@ trait Notification
                 // if ($res != null) {
                 // update notification
                 $noti_res = NotificationModel::where('content_id', $notification->content_id)->update([
-                    'noti_email_cron', '1'
+                    'noti_email_cron' => '1'
                 ]);
                 // }
             }
         }
 
         // Checking for 7 days notifications
-        $date = Carbon::today()->subDay(7)->toDateString();
+        $date = Carbon::today()->subDay()->toDateString();
         $notification_cron_7 = NotificationModel::where('status', '1')->where('notification_type', 'content_approval')->where('noti_send_at', '=', $date)->where('noti_email_cron', '1')->with('pageDetails', 'senderDetails', 'receiverDetails')->get();
 
         if (count($notification_cron_7) > 0) {
@@ -188,8 +187,6 @@ trait Notification
                         // 'updated_at' => date("Y-m-d h:m:s", $t),
                         // 'updated_by' => $user_id,
                     ];
-
-
                     $notification_update_status = NotificationModel::where('content_id', $content_id)->where('status', '1')->update($update_array);
                     if (!empty($notification_update_status)) {
 
@@ -200,8 +197,7 @@ trait Notification
 
                         return false;
                     }
-                    break;
-                } else if ($data_model == 'noti_cron') {
+                } elseif ($data_model == 'noti_cron') {
                     // Notification for cron data
                     $notification_cron_data = NotificationCron::where('content_id', $content_id)->first();
                     if (!empty($notification_cron_data)) {
@@ -229,7 +225,6 @@ trait Notification
                 } else {
                     return false;
                 }
-                break;
         }
     }
 

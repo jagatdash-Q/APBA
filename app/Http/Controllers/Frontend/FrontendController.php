@@ -44,7 +44,7 @@ class FrontendController extends Controller
             // get lattest news and Events
             $lattest_news_and_event = Event::where('status', '1')->orderBy('publish_date', 'desc')->limit(3)->with('getFeaturedImage')->get();
             if ($home != null) {
-                return view('frontend.home', compact('home', 'lattest_news_and_event'));
+                return view('frontend.home', ['home' => $home, 'lattest_news_and_event' => $lattest_news_and_event]);
             } else {
                 abort(404);
             }
@@ -58,7 +58,7 @@ class FrontendController extends Controller
         if ($is_content_available != null) {
             $about_content_details = AboutContent::where('content_id', $is_content_available->id)->with(['getFirstSectionCard', 'getThirdSectionCard', 'getBannerImageWeb', 'getBannerImageTab', 'getBannerImageMobile', 'getsecondSectionImage'])->first();
             if ($about_content_details != null) {
-                return view('frontend.about_us', compact('about_content_details'));
+                return view('frontend.about_us', ['about_content_details' => $about_content_details]);
             } else {
                 abort(404);
             }
@@ -72,31 +72,29 @@ class FrontendController extends Controller
         $is_our_team_page_exist = OurTeam::where('content_status', '1')->with('getOurTeamContent')->first();
         if ($is_our_team_page_exist == null) {
             abort(404);
-        } else {
-            if ($is_our_team_page_exist->getOurTeamContent != null) {
-                $our_team_categories = OurTeamCategory::orderby('id', 'asc')->where('status', '1')->with('ourTeamCatContent')->get();
-                $our_teams_list_count = OurTeamListing::orderby('sort_no', 'asc')->with('getOurTeamListingContent', 'userDetails')->where('content_status', '1')->count();
-                $our_teams_list = OurTeamListing::orderby('sort_no', 'asc')->with('getOurTeamListingContent', 'userDetails')->where('content_status', '1')->paginate(9);
-                $tot = ($our_teams_list_count / 9);
-                $total_pages = (int)($our_teams_list_count / 9);
-                if (is_float($tot)) {
-                    $total_pages = $total_pages + 1;
-                }
-                $title = $is_our_team_page_exist->getOurTeamContent->meta_title;
-                $description =  $is_our_team_page_exist->getOurTeamContent->meta_description;
-                $keywords = $is_our_team_page_exist->getOurTeamContent->meta_keywoard;
+        } elseif ($is_our_team_page_exist->getOurTeamContent != null) {
+            $our_team_categories = OurTeamCategory::orderby('id', 'asc')->where('status', '1')->with('ourTeamCatContent')->get();
+            $our_teams_list_count = OurTeamListing::orderby('sort_no', 'asc')->with('getOurTeamListingContent', 'userDetails')->where('content_status', '1')->count();
+            $our_teams_list = OurTeamListing::orderby('sort_no', 'asc')->with('getOurTeamListingContent', 'userDetails')->where('content_status', '1')->paginate(9);
+            $tot = ($our_teams_list_count / 9);
+            $total_pages = (int)($our_teams_list_count / 9);
+            if (is_float($tot)) {
+                $total_pages += 1;
+            }
+            $title = $is_our_team_page_exist->getOurTeamContent->meta_title;
+            $description =  $is_our_team_page_exist->getOurTeamContent->meta_description;
+            $keywords = $is_our_team_page_exist->getOurTeamContent->meta_keywoard;
+            $current_page_data = count($our_teams_list);
+            $has_new_page = $our_teams_list->hasMorePages();
+            if ($request->ajax()) {
                 $current_page_data = count($our_teams_list);
                 $has_new_page = $our_teams_list->hasMorePages();
-                if ($request->ajax()) {
-                    $current_page_data = count($our_teams_list);
-                    $has_new_page = $our_teams_list->hasMorePages();
-                    $view = view('frontend.our_team_data', compact('our_team_categories', 'is_our_team_page_exist', 'our_teams_list', 'our_teams_list_count', 'total_pages', 'title', 'description', 'keywords', 'current_page_data', 'has_new_page'))->render();
-                    return response()->json(['html' => $view, 'current_page_data' => $current_page_data, 'has_new_page' => $has_new_page]);
-                }
-                return view('frontend.our_team', compact('our_team_categories', 'is_our_team_page_exist', 'our_teams_list', 'our_teams_list_count', 'total_pages', 'title', 'description', 'keywords', 'current_page_data', 'has_new_page'));
-            } else {
-                abort(404);
+                $view = view('frontend.our_team_data', ['our_team_categories' => $our_team_categories, 'is_our_team_page_exist' => $is_our_team_page_exist, 'our_teams_list' => $our_teams_list, 'our_teams_list_count' => $our_teams_list_count, 'total_pages' => $total_pages, 'title' => $title, 'description' => $description, 'keywords' => $keywords, 'current_page_data' => $current_page_data, 'has_new_page' => $has_new_page])->render();
+                return response()->json(['html' => $view, 'current_page_data' => $current_page_data, 'has_new_page' => $has_new_page]);
             }
+            return view('frontend.our_team', ['our_team_categories' => $our_team_categories, 'is_our_team_page_exist' => $is_our_team_page_exist, 'our_teams_list' => $our_teams_list, 'our_teams_list_count' => $our_teams_list_count, 'total_pages' => $total_pages, 'title' => $title, 'description' => $description, 'keywords' => $keywords, 'current_page_data' => $current_page_data, 'has_new_page' => $has_new_page]);
+        } else {
+            abort(404);
         }
     }
 
@@ -104,7 +102,7 @@ class FrontendController extends Controller
     {
         $is_listing_exist =  OurTeamListingContent::where('uid', $uid)->with(['categoryListingContent', 'image_details'])->first();
         if ($is_listing_exist != null) {
-            return view('frontend.our_team_details', compact('is_listing_exist'));
+            return view('frontend.our_team_details', ['is_listing_exist' => $is_listing_exist]);
         }
         abort(404);
     }
@@ -118,39 +116,39 @@ class FrontendController extends Controller
             if ($request->ajax()) {
                 $current_page_data = count($our_teams_list);
                 $has_new_page = $our_teams_list->hasMorePages();
-                $view = view('frontend.our_team_data', compact('our_teams_list', 'current_page_data', 'has_new_page'))->render();
+                $view = view('frontend.our_team_data', ['our_teams_list' => $our_teams_list, 'current_page_data' => $current_page_data, 'has_new_page' => $has_new_page])->render();
+                return response()->json(['html' => $view, 'current_page_data' => $current_page_data, 'has_new_page' => $has_new_page]);
+            }
+        } elseif (CategoryListingContent::where('category_content_uid', $request->cat_uid)->count()) {
+            $get_listing_content_uid = CategoryListingContent::where('category_content_uid', $request->cat_uid)->pluck('listing_content_uid');
+            // Get OurteamListingIds
+            $get_listing_uids = OurTeamListingContent::whereIn('uid', $get_listing_content_uid)->pluck('our_teams_listing_uid');
+            $our_teams_list = OurTeamListing::orderby('sort_no', 'asc')->with('getOurTeamListingContent', 'userDetails')->whereIn('uid', $get_listing_uids)->where('content_status', '1')->paginate(9);
+            $current_page_data = count($our_teams_list);
+            $has_new_page = $our_teams_list->hasMorePages();
+            if ($request->ajax()) {
+                $current_page_data = count($our_teams_list);
+                $has_new_page = $our_teams_list->hasMorePages();
+                $view = view('frontend.our_team_data', ['our_teams_list' => $our_teams_list, 'current_page_data' => $current_page_data, 'has_new_page' => $has_new_page])->render();
                 return response()->json(['html' => $view, 'current_page_data' => $current_page_data, 'has_new_page' => $has_new_page]);
             }
         } else {
-            if (CategoryListingContent::where('category_content_uid', $request->cat_uid)->count()) {
-                $get_listing_content_uid = CategoryListingContent::where('category_content_uid', $request->cat_uid)->pluck('listing_content_uid');
-                // Get OurteamListingIds
-                $get_listing_uids = OurTeamListingContent::whereIn('uid', $get_listing_content_uid)->pluck('our_teams_listing_uid');
-                $our_teams_list = OurTeamListing::orderby('sort_no', 'asc')->with('getOurTeamListingContent', 'userDetails')->whereIn('uid', $get_listing_uids)->where('content_status', '1')->paginate(9);
-                $current_page_data = count($our_teams_list);
-                $has_new_page = $our_teams_list->hasMorePages();
-                if ($request->ajax()) {
-                    $current_page_data = count($our_teams_list);
-                    $has_new_page = $our_teams_list->hasMorePages();
-                    $view = view('frontend.our_team_data', compact('our_teams_list', 'current_page_data', 'has_new_page'))->render();
-                    return response()->json(['html' => $view, 'current_page_data' => $current_page_data, 'has_new_page' => $has_new_page]);
-                }
-            } else {
-                return response()->json(['html' => '']);
-            }
+            return response()->json(['html' => '']);
         }
     }
 
     public function resources(Request $request)
     {
         $content_details = Content::where('template_type', 'resources')->where('content_status', '1')->first();
-        if ($content_details == null)
+        if ($content_details == null) {
             abort(404);
+        }
         $resource = Resource::query();
         $resource = $resource->where('content_id', $content_details->id)->with(['getBannerImageWeb', 'getBannerImageTab', 'getBannerImageMobile']);
 
-        if ($resource->first() == null)
+        if ($resource->first() == null) {
             abort(404);
+        }
 
         if ($request->ajax()) {
             $menu_id = $request->menuId;
@@ -161,16 +159,18 @@ class FrontendController extends Controller
                 $resource = $resource->with(['getResourceMenu' => function ($query) use ($menu_id, $sort, $timing) {
                     $query->orderByRaw("id = ? desc", [$menu_id]);
                     $query->with(['getResourceCard' => function ($card_query) use ($sort, $timing) {
-                        if ($sort != null)
+                        if ($sort != null) {
                             $card_query->orderBy('publish_date', $sort);
-                        if ($timing != null)
+                        }
+                        if ($timing != null) {
                             $card_query->whereMonth('publish_date', $timing);
+                        }
                     }]);
                 }]);
             }
 
             $resource = $resource->first();
-            return view('frontend.resource-cards', compact('resource'));
+            return view('frontend.resource-cards', ['resource' => $resource]);
         } else {
             $resource = $resource->with(['getResourceMenu' => function ($query1) {
                 $query1->with(['getResourceCard' => function ($card_query1) {
@@ -178,7 +178,7 @@ class FrontendController extends Controller
                 }]);
             }])->first();
         }
-        return view('frontend.resources', compact('resource'));
+        return view('frontend.resources', ['resource' => $resource]);
     }
 
     // public function resources(Request $request)
@@ -233,22 +233,25 @@ class FrontendController extends Controller
         // });
 
         if ($request->ajax()) {
-            if ($request->sort != null)
+            if ($request->sort != null) {
                 $event = $event->orderBy('publish_date', $request->sort);
+            }
 
-            if ($request->timing != null)
+            if ($request->timing != null) {
                 $event = $event->whereMonth('publish_date', $request->timing);
+            }
 
-            if ($request->radio_val != null)
+            if ($request->radio_val != null) {
                 $event = $event->where('is_news', $request->radio_val);
+            }
 
             $event = $event->where('status', '1');
             $event = $event->paginate(9);
-            return view('frontend.events.event_cards', compact('event'));
+            return view('frontend.events.event_cards', ['event' => $event]);
         }
 
         $event = $event->orderBy('publish_date', 'desc')->where('status', '1')->paginate(9);
-        return view('frontend.news_events', compact('event'));
+        return view('frontend.news_events', ['event' => $event]);
     }
 
     public function membership()
@@ -257,7 +260,7 @@ class FrontendController extends Controller
         if ($is_content_available != null) {
             $mebership = MembershipContent::where('content_id', $is_content_available->id)->with(['getBannerImageWeb', 'getBannerImageTab', 'getBannerImageMobile', 'getfirstSectionImage', 'getMemberships'])->first();
             if ($mebership != null) {
-                return view('frontend.membership', compact('mebership'));
+                return view('frontend.membership', ['mebership' => $mebership]);
             } else {
                 abort(404);
             }
@@ -269,11 +272,12 @@ class FrontendController extends Controller
     public function contact()
     {
         $content_details = Content::where('template_type', 'contact-us')->where('content_status', '1')->first();
-        if ($content_details == null)
+        if ($content_details == null) {
             abort(404);
+        }
         $contact_us = ContactUs::where('content_id', $content_details->id)->with(['getBannerImageWeb', 'getBannerImageTab', 'getBannerImageMobile'])->first();
         $country = Country::select('name')->get();
-        return view('frontend.contact', compact('country', 'contact_us'));
+        return view('frontend.contact', ['country' => $country, 'contact_us' => $contact_us]);
     }
 
     public function submitContactQuery(Request $request)
@@ -367,7 +371,8 @@ class FrontendController extends Controller
             ->orWhere('speaker_details_data', 'like', '%' . $search . '%')
             ->get();
         if (count($event_speaker) > 0) {
-            for ($i = 0; $i < count($event_speaker); $i++) {
+            $counter = count($event_speaker);
+            for ($i = 0; $i < $counter; $i++) {
                 $result['news-event'][$i]['title'] = $event_speaker[$i]->speaker_name;
                 $result['news-event'][$i]['description'] = $event_speaker[$i]->speaker_details_data;
                 $result['news-event'][$i]['redirect_url'] = $request->root() . '/featured-speaker-details/' . $event_speaker[$i]->id;
@@ -381,8 +386,8 @@ class FrontendController extends Controller
             $query->orWhere('program_trainers', 'like', '%' . $search . '%');
         }])->get();
         if (count($event_workshop) > 0) {
-
-            for ($j = 0; $j < count($event_workshop); $j++) {
+            $counter = count($event_workshop);
+            for ($j = 0; $j < $counter; $j++) {
                 $result['news-event'][$j]['title'] = $event_workshop[$j]['getEventDetails']['event_name'];
                 $result['news-event'][$j]['description'] = $event_workshop[$j]->workshop_name;
                 $result['news-event'][$j]['redirect_url'] = $request->root() . '/event-register/' . $event_workshop[$j]->getEventDetails->uid;
@@ -407,8 +412,8 @@ class FrontendController extends Controller
         }
 
         if (count($event) > 0) {
-
-            for ($k = 0; $k < count($event); $k++) {
+            $counter = count($event);
+            for ($k = 0; $k < $counter; $k++) {
                 $result['news-event'][$k]['title'] = $event[$k]['event_name'];
                 if ($event[$k]['is_news'] == 0) {
                     $result['news-event'][$k]['description'] = $event[$k]['getEventTabs'][0]['tab_desc_data'];
@@ -442,7 +447,8 @@ class FrontendController extends Controller
         }
 
         if (count($member) > 0) {
-            for ($l = 0; $l < count($member); $l++) {
+            $counter = count($member);
+            for ($l = 0; $l < $counter; $l++) {
                 $result['membership'][$l]['title'] = $member[$l]['section_1_head'];
                 $result['membership'][$l]['description'] = $member[$l]['section_1_desc'];
                 $result['membership'][$l]['redirect_url'] = $request->root() . '/membership';
@@ -459,7 +465,8 @@ class FrontendController extends Controller
             ->get();
 
         if (count($resource) > 0) {
-            for ($m = 0; $m < count($resource); $m++) {
+            $counter = count($resource);
+            for ($m = 0; $m < $counter; $m++) {
                 $result['resource'][$m]['title'] = $resource[$m]['page_name'];
                 $result['resource'][$m]['description'] = $resource[$m]['description'];
                 $result['resource'][$m]['redirect_url'] = $request->root() . '/resources';
@@ -470,7 +477,8 @@ class FrontendController extends Controller
 
         $resource_menu = ResourceMenu::with(['getResource'])->where('menu', 'like', '%' . $search . '%')->get();
         if (count($resource_menu) > 0) {
-            for ($n = 0; $n < count($resource_menu); $n++) {
+            $counter = count($resource_menu);
+            for ($n = 0; $n < $counter; $n++) {
                 $result['resource'][$n]['title'] = $resource_menu[$n]['menu'];
                 $result['resource'][$n]['description'] = $resource_menu[$n]['getResource']['description'];
                 $result['resource'][$n]['redirect_url'] = $request->root() . '/resources';
@@ -480,7 +488,8 @@ class FrontendController extends Controller
 
         $resource_card = ResourceCard::with(['getResource'])->where('title', 'like', '%' . $search . '%')->get();
         if (count($resource_card) > 0) {
-            for ($p = 0; $p < count($resource_card); $p++) {
+            $counter = count($resource_card);
+            for ($p = 0; $p < $counter; $p++) {
                 $result['resource'][$p]['title'] = $resource_card[$p]['title'];
                 if ($resource_card[$p]['getResource'] != null) {
                     $result['resource'][$p]['description'] = $resource_card[$p]['getResource']['description'];
@@ -497,8 +506,8 @@ class FrontendController extends Controller
         }])->get();
 
         if (count($resource_alt_tag) > 0) {
-
-            for ($p = 0; $p < count($resource_alt_tag); $p++) {
+            $counter = count($resource_alt_tag);
+            for ($p = 0; $p < $counter; $p++) {
 
                 if ($resource_alt_tag[$p]['getAltSearch'] != null) {
                     $result['resource'][$p]['title'] = $resource_alt_tag[$p]['title'];
@@ -522,7 +531,8 @@ class FrontendController extends Controller
             ->get();
 
         if (count($home) > 0) {
-            for ($m = 0; $m < count($home); $m++) {
+            $counter = count($home);
+            for ($m = 0; $m < $counter; $m++) {
                 $result['home'][$m]['title'] = $home[$m]['page_name'];
                 $result['home'][$m]['description'] = $home[$m]['section_1_desc'];
                 $result['home'][$m]['redirect_url'] = $request->root() . '/';
@@ -536,8 +546,9 @@ class FrontendController extends Controller
             ->where('heading', 'like', '%' . $search . '%')
             ->orWhere('description', 'like', '%' . $search . '%')
             ->get();
+        $counter = count($home_final_section_card);
 
-        for ($m = 0; $m < count($home_final_section_card); $m++) {
+        for ($m = 0; $m < $counter; $m++) {
             $count_var = count($result['home']);
             $result['home'][($count_var)]['title'] = $home_final_section_card[$m]['heading'];
             $result['home'][($count_var)]['description'] = $home_final_section_card[$m]['description'];
@@ -549,8 +560,9 @@ class FrontendController extends Controller
             ->where('heading', 'like', '%' . $search . '%')
             ->orWhere('description', 'like', '%' . $search . '%')
             ->get();
+        $counter = count($home_first_section_card);
 
-        for ($m = 0; $m < count($home_first_section_card); $m++) {
+        for ($m = 0; $m < $counter; $m++) {
             $count_var = count($result['home']);
             $result['home'][($count_var)]['title'] = $home_first_section_card[$m]['heading'];
             $result['home'][($count_var)]['description'] = $home_first_section_card[$m]['description'];
@@ -561,8 +573,9 @@ class FrontendController extends Controller
         $home_partner_section = HomePartnerSection::where('is_active', '1')
             ->where('hover_text', 'like', '%' . $search . '%')
             ->get();
+        $counter = count($home_partner_section);
 
-        for ($m = 0; $m < count($home_partner_section); $m++) {
+        for ($m = 0; $m < $counter; $m++) {
             $count_var = count($result['home']);
             $result['home'][($count_var)]['title'] = $home_partner_section[$m]['hover_text'];
             $result['home'][($count_var)]['description'] = $home_partner_section[$m]['hover_text'];
@@ -574,8 +587,9 @@ class FrontendController extends Controller
             ->where('slider_heading', 'like', '%' . $search . '%')
             ->orWhere('slider_desc', 'like', '%' . $search . '%')
             ->get();
+        $counter = count($home_slider_section);
 
-        for ($m = 0; $m < count($home_slider_section); $m++) {
+        for ($m = 0; $m < $counter; $m++) {
             $count_var = count($result['home']);
             $result['home'][($count_var)]['title'] = $home_slider_section[$m]['slider_heading'];
             $result['home'][($count_var)]['description'] = $home_slider_section[$m]['slider_desc'];
@@ -585,7 +599,7 @@ class FrontendController extends Controller
 
         // dd($result['home']);
 
-        return view('frontend.search_page', compact('result', 'count', 'search'));
+        return view('frontend.search_page', ['result' => $result, 'count' => $count, 'search' => $search]);
     }
     public function reloadCaptcha()
     {

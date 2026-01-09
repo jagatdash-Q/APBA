@@ -15,9 +15,15 @@ class User extends Authenticatable implements LaratrustUser
     // The User model requires this trait
 
     /**
+     * Factory helper for static analysis
+     *
+     * @method static \Database\Factories\UserFactory factory(...$parameters)
+     */
+
+    /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var list<string>
      */
     protected $fillable = [
         'name', 'email', 'password', '2fa_status', 'google2fa_secret'
@@ -26,7 +32,7 @@ class User extends Authenticatable implements LaratrustUser
     /**
      * The attributes that should be hidden for arrays.
      *
-     * @var array
+     * @var list<string>
      */
     protected $hidden = [
         'password', 'remember_token', 'google2fa_secret'
@@ -35,7 +41,7 @@ class User extends Authenticatable implements LaratrustUser
     /**
      * The attributes that should be cast to native types.
      *
-     * @var array
+     * @var array<string,string>
      */
     protected $casts = [
         'email_verified_at' => 'datetime',

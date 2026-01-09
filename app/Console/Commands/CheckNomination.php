@@ -33,7 +33,7 @@ class CheckNomination extends Command
     public function handle()
     {
         $nomination = Nomination::with('getNominationPosition')->where('status', '1')->get();
-        if (count($nomination)) {
+        if (count($nomination) > 0) {
             foreach ($nomination as $data) {
                 $nomiantion_end_date = Carbon::parse($data->end_date);
                 $nomination_start_date = Carbon::parse($data->start_date);
@@ -42,19 +42,15 @@ class CheckNomination extends Command
                 $customer_data = Customer::where('is_verify_email', '1')->where('current_subscription_status', 'a')->where('nomination', 'yes')->get();
 
                 // Nomination create mail
-                if ($nomination_create_date === $today_date) {
-                    if (count($customer_data) > 0) {
-                        foreach ($customer_data as $customer) {
-                            $this->mail_sent($data, $customer, 'create_day');
-                        }
+                if ($nomination_create_date === $today_date && count($customer_data) > 0) {
+                    foreach ($customer_data as $customer) {
+                        $this->mail_sent($data, $customer, 'create_day');
                     }
                 }
                 // Nomination start mail
-                if ($nomination_start_date->eq($today_date)) {
-                    if (count($customer_data) > 0) {
-                        foreach ($customer_data as $customer) {
-                            $this->mail_sent($data, $customer, '0');
-                        }
+                if ($nomination_start_date->eq($today_date) && count($customer_data) > 0) {
+                    foreach ($customer_data as $customer) {
+                        $this->mail_sent($data, $customer, '0');
                     }
                 }
 
@@ -89,7 +85,7 @@ class CheckNomination extends Command
             try {
                 if ($days == 'create_day') {
                     $position_name = [];
-                    if (count($nomination->getNominationPosition)) {
+                    if (count($nomination->getNominationPosition) > 0) {
                         foreach ($nomination->getNominationPosition as $key => $value) {
                             if (isset($value->getPosition)) {
                                 $position_name[$key] = $value->getPosition->membership_position;

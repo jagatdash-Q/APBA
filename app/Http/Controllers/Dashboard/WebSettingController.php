@@ -17,7 +17,7 @@ class WebSettingController extends Controller
     public function index()
     {
         $WebSetting = WebSetting::find(1);
-        return view('dashboard.websetting', compact('WebSetting'));
+        return view('dashboard.websetting', ['WebSetting' => $WebSetting]);
     }
 
     /**

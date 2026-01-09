@@ -55,7 +55,7 @@ trait EmailTrait
                     $data['subject'] = $subject;
                     $data['receiver'] = $receiver;
                     $data['data'] = $data;
-                    Log::info(json_encode($data));
+                    Log::info((string) json_encode($data));
                     $data['message'] = 'Receiver not found';
                     return true;
                 }
@@ -75,7 +75,7 @@ trait EmailTrait
                     $data['receiver'] = $receiver;
                     $data['data'] = $data;
                     $data['message'] = 'Receiver not found';
-                    Log::info(json_encode($data));
+                    Log::info((string) json_encode($data));
                     return true;
                 }
 
@@ -94,7 +94,7 @@ trait EmailTrait
                     $data['receiver'] = $receiver;
                     $data['data'] = $data;
                     $data['message'] = 'Receiver not found';
-                    Log::info(json_encode($data));
+                    Log::info((string) json_encode($data));
                     return true;
                 }
 

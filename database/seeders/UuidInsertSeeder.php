@@ -15,7 +15,7 @@ class UuidInsertSeeder extends Seeder
     public function run(): void
     {
         $get_optional = EventRegistrationOptional::get();
-        if (count($get_optional)) {
+        if (count($get_optional) > 0) {
             foreach ($get_optional as $value) {
                 $value->uuid = Str::uuid()->toString();
                 $value->save();

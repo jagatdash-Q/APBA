@@ -24,11 +24,6 @@ class CheckSubscription extends Command
      * @var string
      */
     protected $description = 'Command description';
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
     /**
      * Execute the console command.
      */
@@ -83,8 +78,9 @@ class CheckSubscription extends Command
                     // info('Expire');
                     $data->current_subscription_status = 'e';
                     $data->save();
-                    if ($data->save())
+                    if ($data->save()) {
                         $reminder_mail->delete();
+                    }
                 }
             }
         }

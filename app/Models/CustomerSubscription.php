@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Class CustomerSubscription
+ *
+ * @property int $id
+ * @property string|null $subscription_expired_on
+ */
 class CustomerSubscription extends Model
 {
     use HasFactory , SoftDeletes;

@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property-read \App\Models\Event|null $getEvent
+ */
 class EventWorkshopOptional extends Model
 {
     use HasFactory;

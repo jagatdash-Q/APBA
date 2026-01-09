@@ -35,29 +35,31 @@ class OurTeamListingController extends Controller
 
     public function index()
     {
-        if (!Auth::user()->hasPermission('our_team-read'))
+        if (!Auth::user()->hasPermission('our_team-read')) {
             abort(403);
-        $our_teams_list = [];
+        }
         $our_teams_list = OurTeamListing::orderby('sort_no', 'asc')->with('lockAcquiredUser', 'userDetails',)->get();
         $our_teams = OurTeam::where('content_status', '1')->get();
         // General END
-        return view('dashboard.our_teams.listing.list', compact("our_teams_list", "our_teams"));
+        return view('dashboard.our_teams.listing.list', ['our_teams_list' => $our_teams_list, 'our_teams' => $our_teams]);
     }
 
 
     public function create(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-create'))
+        if (!Auth::user()->hasPermission('our_team-create')) {
             abort(403);
+        }
         $our_teams_category_list = OurTeamCategory::where('status', '1')->with('ourTeamCatContent')->get();
         // General END
-        return view('dashboard.our_teams.listing.create', compact("our_teams_category_list"));
+        return view('dashboard.our_teams.listing.create', ['our_teams_category_list' => $our_teams_category_list]);
     }
 
     public function store(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-create'))
+        if (!Auth::user()->hasPermission('our_team-create')) {
             abort(403);
+        }
         $validator = Validator::make($request->all(), [
             'page_name' => 'required',
             'meta_title' => 'required',
@@ -78,7 +80,7 @@ class OurTeamListingController extends Controller
         $unique_listing_id =  Str::uuid()->toString();
         $OurTeamListing = [];
         $OurTeamListing['uid'] = $unique_listing_id;
-        $OurTeamListing['our_teams_uid'] = !empty($ourteam_data) ? $ourteam_data->uid : '';
+        $OurTeamListing['our_teams_uid'] = empty($ourteam_data) ? '' : $ourteam_data->uid;
         $OurTeamListing['page_type'] = 'our_teams_listing';
         $OurTeamListing['content_status'] =  $request->submit;
         $OurTeamListing['created_by'] = Auth::id();
@@ -129,7 +131,7 @@ class OurTeamListingController extends Controller
             $OurTeamListingContent['our_teams_listing_uid'] = $unique_listing_id;
             $OurTeamListingContent['status'] = '1';
             $res = OurTeamListingContent::create($OurTeamListingContent);
-            if (count($request->our_team_category) > 0)
+            if (count($request->our_team_category) > 0) {
                 foreach ($request->our_team_category as $category_data) {
                     $category_details = OurTeamCategoryContent::where('id', $category_data)->first();
                     if ($category_details != null) {
@@ -138,6 +140,7 @@ class OurTeamListingController extends Controller
                         $category_listing_contents = CategoryListingContent::create($category_listing_content);
                     }
                 }
+            }
         }
         return redirect()->action('Dashboard\OurTeamListingController@index')->with('doneMessage', 'Team listing page has been created');
     }
@@ -146,13 +149,14 @@ class OurTeamListingController extends Controller
 
     public function edit(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-update'))
+        if (!Auth::user()->hasPermission('our_team-update')) {
             abort(403);
+        }
         $OurTeamListing = OurTeamListing::where('uid', '=', $request->uid)->with('getOurTeamListingContent')->first();
         $our_teams_category_list = OurTeamCategory::where('status', '1')->with('ourTeamCatContent')->get();
         if ($OurTeamListing != null) {
             if ($OurTeamListing->getOurTeamListingContent != null) {
-                return view('dashboard.our_teams.listing.edit', compact("OurTeamListing", "our_teams_category_list"));
+                return view('dashboard.our_teams.listing.edit', ['OurTeamListing' => $OurTeamListing, 'our_teams_category_list' => $our_teams_category_list]);
             } else {
                 abort(404);
             }
@@ -170,8 +174,9 @@ class OurTeamListingController extends Controller
 
     public function update(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-update'))
+        if (!Auth::user()->hasPermission('our_team-update')) {
             abort(403);
+        }
         $validator = Validator::make($request->all(), [
             'page_name' => 'required',
             'meta_title' => 'required',
@@ -189,7 +194,7 @@ class OurTeamListingController extends Controller
         }
         $OurTeamListing['content_status'] =  $request->submit;
         $OurTeamListing['edited_by'] = Auth::id();
-        $our_team_listing_details = OurTeamListing::where('uid', $request->uid)->update($OurTeamListing);
+        OurTeamListing::where('uid', $request->uid)->update($OurTeamListing);
 
         // Delete our team category content
         $our_team_listing_uids = OurTeamListingContent::where('our_teams_listing_uid', $request->uid)->first();
@@ -244,8 +249,9 @@ class OurTeamListingController extends Controller
     /* delete our teams list by our teams  uid  */
     public function delete(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-delete'))
+        if (!Auth::user()->hasPermission('our_team-delete')) {
             abort(403);
+        }
         if ($request->id == null || $request->id == '') {
             return ['status' => 'error', 'message' => 'Invalid details'];
         }

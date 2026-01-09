@@ -33,7 +33,7 @@ class ExportNominationPosition implements FromCollection, WithHeadings, WithEven
         $check_details = NominationPosition::with(['getPosition', 'getNomination'])->where('uuid', $uuid)->first();
         if ($check_details != null) {
             $nomination_list = CustomerNomination::with('getMemberName')->where('nomination_uuid', $check_details->nomination_uuid)->where('nomination_position_uuid', $check_details->position_uuid)->get();
-            if (count($nomination_list)) {
+            if (count($nomination_list) > 0) {
 
                 foreach ($nomination_list as $value) {
                     $total_vote = CustomerNomination::where('member_id', $value->member_id)->where('nomination_uuid', $check_details->nomination_uuid)->where('nomination_position_uuid', $check_details->position_uuid)->count();
@@ -43,15 +43,16 @@ class ExportNominationPosition implements FromCollection, WithHeadings, WithEven
 
                     $check_accept = NominationAcceptList::where('member_id', $value->member_id)->where('nomination_uuid', $check_details->nomination_uuid)->where('nomination_position_uuid', $check_details->position_uuid)->first();
 
-                    if ($get_member_status != null && $check_accept == null)
+                    if ($get_member_status != null && $check_accept == null) {
                         $status = 'In Active';
-                    elseif ($get_member_status == null && $check_accept != null)
+                    } elseif ($get_member_status == null && $check_accept != null) {
                         $status = 'Move to Election';
-                    else
+                    } else {
                         $status = 'Active';
+                    }
 
 
-                    if (count($temp_data) == 0) {
+                    if (count($temp_data) === 0) {
                         $temp_data[] = [
                             $value->getMemberName->id, $value->getMemberName->user_name, $total_vote, number_format(floatval($total_percentage), 2, '.', ''), $status
                         ];
@@ -76,20 +77,25 @@ class ExportNominationPosition implements FromCollection, WithHeadings, WithEven
         $check_details = NominationPosition::with(['getPosition', 'getNomination'])->where('uuid', $uuid)->first();
         if ($check_details != null) {
             $title = "Nomination Start & End Date: ";
-            if (isset($check_details->getNomination))
+            if (isset($check_details->getNomination)) {
                 $title .= Carbon::parse($check_details->getNomination->start_date)->format('d F Y');
+            }
             $title .= " to ";
-            if (isset($check_details->getNomination))
+            if (isset($check_details->getNomination)) {
                 $title .= Carbon::parse($check_details->getNomination->end_date)->format('d F Y');
+            }
             $title .= "\n Nomination Name: ";
-            if (isset($check_details->getNomination))
+            if (isset($check_details->getNomination)) {
                 $title .= $check_details->getNomination->name;
+            }
             $title .= "\n Membership Type: ";
-            if (isset($check_details->getPosition))
+            if (isset($check_details->getPosition)) {
                 $title .= $check_details->getPosition->getMembershipType->membership_type;
+            }
             $title .= "\n Position: ";
-            if (isset($check_details->getPosition))
+            if (isset($check_details->getPosition)) {
                 $title .= $check_details->getPosition->membership_position;
+            }
         } else {
             $title = ' ';
         }

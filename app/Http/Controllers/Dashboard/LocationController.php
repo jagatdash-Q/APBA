@@ -15,7 +15,7 @@ class LocationController extends Controller
 {
     public function manageCountries(Request $request){
         $country = Country::with('getCreaterDetails')->orderBy('name','asc')->paginate(10);
-        return view('dashboard.location-manager.manage-country', compact('country'));
+        return view('dashboard.location-manager.manage-country', ['country' => $country]);
     }
 
     public function createCountry(Request $request){

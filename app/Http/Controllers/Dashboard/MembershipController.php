@@ -19,8 +19,9 @@ class MembershipController extends Controller
     use Common;
     public function createMemberShip(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-create'))
+        if (!Auth::user()->hasPermission('content_management-create')) {
             abort(403);
+        }
         $member_ships_exists = '';
         if (Content::where('template_type', 'membership')->where('content_status', '1')->count()) {
             return redirect()->route('admin.contents.manage')->with('errorMessage', 'Membership page already has been created');
@@ -76,31 +77,27 @@ class MembershipController extends Controller
                     $membership_button = 'membership_button_' . $sp_count;
                     $membership_desc = 'membership_desc_' . $sp_count;
                     $membership_plan = 'membership_plan_' . $sp_count;
-                    if ($request->has($membership_name)) {
-                        if ($request->$membership_name != '' && $request->$membership_srt_desc != '' && $request->$membership_image != '' && $request->$membership_price != '' && $request->$membership_button != '' && $request->$membership_desc != '') {
-
-                            // Check if membership name already taken
-
-                            $is_membership_exist = MembershipPackage::where('membership_name', $request->$membership_name)->first();
-                            if ($is_membership_exist == null) {
-                                $is_package_create = MembershipPackage::create(
-                                    [
-                                        'uid' => Str::uuid()->toString(),
-                                        'membership_contents_id' => $is_content_create->id,
-                                        'membership_name' => $request->$membership_name,
-                                        'membership_srt_desc' => $request->$membership_srt_desc,
-                                        'subscription_type' => $request->$membership_subscription_type,
-                                        'membership_image' => Helper::GetMediaUid($request->$membership_image),
-                                        'membership_button_text' => $request->$membership_button,
-                                        'membership_description' => $request->$membership_desc,
-                                        'membership_price' => $request->$membership_price,
-                                        'membership_plan' => $request->$membership_plan,
-                                        'created_by' => Auth::id()
-                                    ]
-                                );
-                            } else {
-                                $member_ships_exists .= $request->$membership_name . ' , ';
-                            }
+                    if ($request->has($membership_name) && ($request->$membership_name != '' && $request->$membership_srt_desc != '' && $request->$membership_image != '' && $request->$membership_price != '' && $request->$membership_button != '' && $request->$membership_desc != '')) {
+                        // Check if membership name already taken
+                        $is_membership_exist = MembershipPackage::where('membership_name', $request->$membership_name)->first();
+                        if ($is_membership_exist == null) {
+                            $is_package_create = MembershipPackage::create(
+                                [
+                                    'uid' => Str::uuid()->toString(),
+                                    'membership_contents_id' => $is_content_create->id,
+                                    'membership_name' => $request->$membership_name,
+                                    'membership_srt_desc' => $request->$membership_srt_desc,
+                                    'subscription_type' => $request->$membership_subscription_type,
+                                    'membership_image' => Helper::GetMediaUid($request->$membership_image),
+                                    'membership_button_text' => $request->$membership_button,
+                                    'membership_description' => $request->$membership_desc,
+                                    'membership_price' => $request->$membership_price,
+                                    'membership_plan' => $request->$membership_plan,
+                                    'created_by' => Auth::id()
+                                ]
+                            );
+                        } else {
+                            $member_ships_exists .= $request->$membership_name . ' , ';
                         }
                     }
                 }
@@ -109,7 +106,7 @@ class MembershipController extends Controller
                     'content_status' => '1'
                 );
                 Content::whereId($request->content_id)->update($data);
-                if ($member_ships_exists == '') {
+                if ($member_ships_exists === '') {
                     return redirect()->route('admin.contents.manage')->with('doneMessage', 'Membership page created successfully');
                 } else {
 
@@ -123,13 +120,14 @@ class MembershipController extends Controller
 
     public function editMembership(Request $request, $id)
     {
-        if (!Auth::user()->hasPermission('content_management-update'))
+        if (!Auth::user()->hasPermission('content_management-update')) {
             abort(403);
+        }
         $is_content_exist = Content::whereId($id)->first();
         if ($is_content_exist != null) {
             $mebership = MembershipContent::where('content_id', $is_content_exist->id)->with(['getBannerImageWeb', 'getBannerImageTab', 'getBannerImageMobile', 'getfirstSectionImage', 'getMemberships'])->first();
             if ($mebership != null) {
-                return view('dashboard.content-manager.membership.edit-membership', compact('mebership'));
+                return view('dashboard.content-manager.membership.edit-membership', ['mebership' => $mebership]);
             } else {
                 abort(404);
             }
@@ -140,8 +138,9 @@ class MembershipController extends Controller
 
     public function deleteMemberShipPackage(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-delete'))
+        if (!Auth::user()->hasPermission('content_management-delete')) {
             return ['status' => 'error', 'message' => 'Access Denied!'];
+        }
 
         $is_package_available = MembershipPackage::whereId($request->id)->first();
         if ($is_package_available == null) {
@@ -159,8 +158,9 @@ class MembershipController extends Controller
 
     public function updateMembership(Request $request)
     {
-        if (!Auth::user()->hasPermission('content_management-update'))
+        if (!Auth::user()->hasPermission('content_management-update')) {
             abort(403);
+        }
         $member_ships_exists = '';
         // Check if content exist
         $is_content_exist = Content::whereId($request->content_id)->first();
@@ -250,29 +250,27 @@ class MembershipController extends Controller
                             }
                         }
                     }
-                } else {
-                    if ($request->has($membership_name)) {
-                        if ($request->$membership_name != '' && $request->$membership_srt_desc != '' && $request->$membership_image != '' && $request->$membership_price != '' && $request->$membership_button != '' && $request->$membership_desc != '') {
-                            $is_membership_exist = MembershipPackage::where('membership_name', $request->$membership_name)->first();
-                            if ($is_membership_exist == null) {
-                                $is_package_create = MembershipPackage::create(
-                                    [
-                                        'uid' => Str::uuid()->toString(),
-                                        'membership_contents_id' => $request->membership_id,
-                                        'membership_name' => $request->$membership_name,
-                                        'membership_srt_desc' => $request->$membership_srt_desc,
-                                        'subscription_type' => $request->$membership_subscription_type,
-                                        'membership_image' => Helper::GetMediaUid($request->$membership_image),
-                                        'membership_button_text' => $request->$membership_button,
-                                        'membership_description' => $request->$membership_desc,
-                                        'membership_price' => $request->$membership_price,
-                                        'membership_plan' => $request->$membership_plan,
-                                        'created_by' => Auth::id()
-                                    ]
-                                );
-                            } else {
-                                $member_ships_exists .= $request->$membership_name . ' , ';
-                            }
+                } elseif ($request->has($membership_name)) {
+                    if ($request->$membership_name != '' && $request->$membership_srt_desc != '' && $request->$membership_image != '' && $request->$membership_price != '' && $request->$membership_button != '' && $request->$membership_desc != '') {
+                        $is_membership_exist = MembershipPackage::where('membership_name', $request->$membership_name)->first();
+                        if ($is_membership_exist == null) {
+                            $is_package_create = MembershipPackage::create(
+                                [
+                                    'uid' => Str::uuid()->toString(),
+                                    'membership_contents_id' => $request->membership_id,
+                                    'membership_name' => $request->$membership_name,
+                                    'membership_srt_desc' => $request->$membership_srt_desc,
+                                    'subscription_type' => $request->$membership_subscription_type,
+                                    'membership_image' => Helper::GetMediaUid($request->$membership_image),
+                                    'membership_button_text' => $request->$membership_button,
+                                    'membership_description' => $request->$membership_desc,
+                                    'membership_price' => $request->$membership_price,
+                                    'membership_plan' => $request->$membership_plan,
+                                    'created_by' => Auth::id()
+                                ]
+                            );
+                        } else {
+                            $member_ships_exists .= $request->$membership_name . ' , ';
                         }
                     }
                 }
@@ -282,7 +280,7 @@ class MembershipController extends Controller
                 'updated_by' => Auth::id(),
             );
             Content::whereId($request->content_id)->update($content_details);
-            if ($member_ships_exists == '') {
+            if ($member_ships_exists === '') {
                 return redirect()->route('admin.contents.manage')->with('doneMessage', 'Membership page updated successfully');
             } else {
                 return redirect()->route('admin.contents.manage')->with('errorMessage', 'Membership page updated successfully but these membership name already has been taken:- ' . substr($member_ships_exists, 0, -1));
@@ -298,7 +296,7 @@ class MembershipController extends Controller
             if ($mebership != null) {
                 // Default membership
                 $default = DefaultMembership::with('getPackageInfo')->first();
-                return view('dashboard.content-manager.membership.default-membership', compact('mebership', 'default'));
+                return view('dashboard.content-manager.membership.default-membership', ['mebership' => $mebership, 'default' => $default]);
             } else {
                 abort(404);
             }

@@ -21,17 +21,19 @@ class ContentController extends Controller
     use Common;
     public function manageContents(Request $request)
     {
-        if(!Auth::user()->hasPermission('content_management-read'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-read')) {
+            abort(403);
+        }
         $templates = Template::all();
         $contents = Content::where('content_status', '1')->with(['getCreaterDetails', 'GetEditorDetails'])->orderBy('id', 'desc')->get();
-        return view('dashboard.content-manager.index', compact('contents', 'templates'));
+        return view('dashboard.content-manager.index', ['contents' => $contents, 'templates' => $templates]);
     }
 
     public function createContent(Request $request, $id, $slug)
     {
-        if(!Auth::user()->hasPermission('content_management-create'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-create')) {
+            abort(403);
+        }
         // Check if template exist
         if (Template::whereId($id)->count()) {
             if ($slug == 'about') {
@@ -44,8 +46,8 @@ class ContentController extends Controller
                     'created_by' => Auth::id(),
                     'content_status' => '0',
                 ]);
-                return view('dashboard.content-manager.about.create-about', compact('content_details'));
-            } else if ($slug == 'membership') {
+                return view('dashboard.content-manager.about.create-about', ['content_details' => $content_details]);
+            } elseif ($slug == 'membership') {
                 if (Content::where('template_type', $slug)->where('content_status', '1')->count()) {
                     return redirect()->route('admin.contents.manage')->with('errorMessage', 'Membership page has already been created');
                 }
@@ -55,8 +57,8 @@ class ContentController extends Controller
                     'created_by' => Auth::id(),
                     'content_status' => '0',
                 ]);
-                return view('dashboard.content-manager.membership.create-membership', compact('content_details'));
-            } else if ($slug == 'resources') {
+                return view('dashboard.content-manager.membership.create-membership', ['content_details' => $content_details]);
+            } elseif ($slug == 'resources') {
                 if (Content::where('template_type', $slug)->where('content_status', '1')->count()) {
                     return redirect()->route('admin.contents.manage')->with('errorMessage', 'Resource page has already been created');
                 }
@@ -67,8 +69,8 @@ class ContentController extends Controller
                     'content_status' => '0',
                 ]);
                 $resource = null;
-                return view('dashboard.content-manager.resource.create', compact('content_details', 'resource'));
-            } else if ($slug == 'contact-us') {
+                return view('dashboard.content-manager.resource.create', ['content_details' => $content_details, 'resource' => $resource]);
+            } elseif ($slug == 'contact-us') {
                 if (Content::where('template_type', $slug)->where('content_status', '1')->count()) {
                     return redirect()->route('admin.contents.manage')->with('errorMessage', 'Contact us page has already been created');
                 }
@@ -79,8 +81,8 @@ class ContentController extends Controller
                     'content_status' => '0',
                 ]);
                 $contact_us = null;
-                return view('dashboard.content-manager.contact_us.index', compact('content_details', 'contact_us'));
-            } else if ($slug == 'home') {
+                return view('dashboard.content-manager.contact_us.index', ['content_details' => $content_details, 'contact_us' => $contact_us]);
+            } elseif ($slug == 'home') {
                 if (Content::where('template_type', $slug)->where('content_status', '1')->count()) {
                     return redirect()->route('admin.contents.manage')->with('errorMessage', 'Home page has already been created');
                 }
@@ -90,7 +92,7 @@ class ContentController extends Controller
                     'created_by' => Auth::id(),
                     'content_status' => '0',
                 ]);
-                return view('dashboard.content-manager.home.create', compact('content_details'));
+                return view('dashboard.content-manager.home.create', ['content_details' => $content_details]);
             } else {
                 abort(404);
             }
@@ -119,23 +121,21 @@ class ContentController extends Controller
                 ]);
                 return ['status' => 'success', 'message' => 'Section details has been created', 'result' => AboutContentTemp::where('content_id', $request->content_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'imageDetails'])->get()];
             }
+        } elseif (AboutContentTemp::where('content_id', $request->content_id)->where('section_id', $request->section_id)->count() >= 5) {
+            return ['status' => 'error', 'message' => 'already all contents has been given', 'result' => AboutContentTemp::where('content_id', $request->content_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'imageDetails'])->get()];
         } else {
-            if (AboutContentTemp::where('content_id', $request->content_id)->where('section_id', $request->section_id)->count() >= 5) {
-                return ['status' => 'error', 'message' => 'already all contents has been given', 'result' => AboutContentTemp::where('content_id', $request->content_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'imageDetails'])->get()];
-            } else {
-                if (in_array(pathinfo(Helper::getMediaPath($request->card_img), PATHINFO_EXTENSION), ['mp4', 'webm', 'ogg', 'pdf'])) {
-                    return ['status' => 'error', 'message' => 'Only image is allowed', 'result' => AboutContentTemp::where('content_id', $request->content_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'imageDetails'])->get()];
-                }
-                AboutContentTemp::create([
-                    'content_id' => $request->content_id,
-                    'section_id' => $request->section_id,
-                    'desc' => $request->desc_card,
-                    'created_by' => Auth::id(),
-                    'image' => Helper::GetMediaUid($request->card_img),
-                    'hover_image' => Helper::GetMediaUid($request->card_img_2),
-                ]);
-                return ['status' => 'success', 'message' => 'Section details has been created', 'result' => AboutContentTemp::where('content_id', $request->content_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'imageDetails'])->get()];
+            if (in_array(pathinfo(Helper::getMediaPath($request->card_img), PATHINFO_EXTENSION), ['mp4', 'webm', 'ogg', 'pdf'])) {
+                return ['status' => 'error', 'message' => 'Only image is allowed', 'result' => AboutContentTemp::where('content_id', $request->content_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'imageDetails'])->get()];
             }
+            AboutContentTemp::create([
+                'content_id' => $request->content_id,
+                'section_id' => $request->section_id,
+                'desc' => $request->desc_card,
+                'created_by' => Auth::id(),
+                'image' => Helper::GetMediaUid($request->card_img),
+                'hover_image' => Helper::GetMediaUid($request->card_img_2),
+            ]);
+            return ['status' => 'success', 'message' => 'Section details has been created', 'result' => AboutContentTemp::where('content_id', $request->content_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'imageDetails'])->get()];
         }
     }
 
@@ -159,39 +159,39 @@ class ContentController extends Controller
                 ]);
                 return ['status' => 'success', 'message' => 'Section details has been created', 'result' => AboutContentCards::where('about_contents_id', $request->about_contents_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'getImageDetails'])->get()];
             }
+        } elseif (AboutContentCards::where('about_contents_id', $request->about_contents_id)->where('section_id', $request->section_id)->count() >= 5) {
+            return ['status' => 'error', 'message' => 'already all contents has been given', 'result' => AboutContentCards::where('about_contents_id', $request->about_contents_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'getImageDetails'])->get()];
         } else {
-            if (AboutContentCards::where('about_contents_id', $request->about_contents_id)->where('section_id', $request->section_id)->count() >= 5) {
-                return ['status' => 'error', 'message' => 'already all contents has been given', 'result' => AboutContentCards::where('about_contents_id', $request->about_contents_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'getImageDetails'])->get()];
-            } else {
-                if (in_array(pathinfo(Helper::getMediaPath($request->card_img), PATHINFO_EXTENSION), ['mp4', 'webm', 'ogg', 'pdf'])) {
-                    return ['status' => 'error', 'message' => 'Only image is allowed', 'result' => AboutContentCards::where('about_contents_id', $request->about_contents_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'getImageDetails'])->get()];
-                }
-                AboutContentCards::create([
-                    'about_contents_id' => $request->about_contents_id,
-                    'section_id' => $request->section_id,
-                    'desc' => $request->desc_card,
-                    'created_by' => Auth::id(),
-                    'image' => Helper::GetMediaUid($request->card_img),
-                    'hover_image' => Helper::GetMediaUid($request->card_img_2),
-                ]);
-                return ['status' => 'success', 'message' => 'Section details has been created', 'result' => AboutContentCards::where('about_contents_id', $request->about_contents_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'getImageDetails'])->get()];
+            if (in_array(pathinfo(Helper::getMediaPath($request->card_img), PATHINFO_EXTENSION), ['mp4', 'webm', 'ogg', 'pdf'])) {
+                return ['status' => 'error', 'message' => 'Only image is allowed', 'result' => AboutContentCards::where('about_contents_id', $request->about_contents_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'getImageDetails'])->get()];
             }
+            AboutContentCards::create([
+                'about_contents_id' => $request->about_contents_id,
+                'section_id' => $request->section_id,
+                'desc' => $request->desc_card,
+                'created_by' => Auth::id(),
+                'image' => Helper::GetMediaUid($request->card_img),
+                'hover_image' => Helper::GetMediaUid($request->card_img_2),
+            ]);
+            return ['status' => 'success', 'message' => 'Section details has been created', 'result' => AboutContentCards::where('about_contents_id', $request->about_contents_id)->where('section_id', $request->section_id)->with(['hoverImageDetails', 'getImageDetails'])->get()];
         }
     }
 
 
     public function editAboutCard(Request $request)
     {
-        if(!Auth::user()->hasPermission('content_management-update'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-update')) {
+            abort(403);
+        }
         $card_details = AboutContentCards::whereId($request->id)->with(['hoverImageDetails', 'getImageDetails'])->first();
         return ['status' => 'success', 'result' => $card_details];
     }
 
     public function updateAboutCard(Request $request)
     {
-        if(!Auth::user()->hasPermission('content_management-update'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-update')) {
+            abort(403);
+        }
         $card_details = AboutContentCards::whereId($request->card_details_id)->with(['hoverImageDetails', 'getImageDetails'])->first();
         if ($card_details != null) {
             if (in_array(pathinfo(Helper::getMediaPath($request->card_img), PATHINFO_EXTENSION), ['mp4', 'webm', 'ogg', 'pdf'])) {
@@ -214,7 +214,7 @@ class ContentController extends Controller
 
     public function deleteAboutCard(Request $request)
     {
-        $card_details = AboutContentCards::whereId($request->id)->delete();
+        AboutContentCards::whereId($request->id)->delete();
         $result = AboutContentCards::where('section_id', $request->section_id)->with(['hoverImageDetails', 'getImageDetails'])->get();
         return ['status' => 'success', 'message' => 'Card deleted successfully', 'result' => $result];
     }
@@ -223,8 +223,9 @@ class ContentController extends Controller
 
     public function createAboutPage(Request $request)
     {
-        if(!Auth::user()->hasPermission('content_management-create'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-create')) {
+            abort(403);
+        }
         if (Content::where('template_type', 'about')->where('content_status', '1')->count()) {
             return redirect()->route('admin.contents.manage')->with('errorMessage', 'About us page already has been created');
         } else {
@@ -302,8 +303,9 @@ class ContentController extends Controller
 
     public function updateAboutPage(Request $request)
     {
-        if(!Auth::user()->hasPermission('content_management-update'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-update')) {
+            abort(403);
+        }
         $content_details = array(
             'updated_by' => Auth::id(),
         );
@@ -361,13 +363,14 @@ class ContentController extends Controller
 
     public function editAboutPage(Request $request, $id)
     {
-        if(!Auth::user()->hasPermission('content_management-update'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-update')) {
+            abort(403);
+        }
         $is_content_exist = Content::whereId($id)->first();
         if ($is_content_exist != null) {
             $about_content_details = AboutContent::where('content_id', $is_content_exist->id)->with(['getFirstSectionCard', 'getThirdSectionCard', 'getBannerImageWeb', 'getBannerImageTab', 'getBannerImageMobile', 'getsecondSectionImage'])->first();
             if ($about_content_details != null) {
-                return view('dashboard.content-manager.about.edit-about', compact('about_content_details'));
+                return view('dashboard.content-manager.about.edit-about', ['about_content_details' => $about_content_details]);
             } else {
                 abort(404);
             }
@@ -378,8 +381,9 @@ class ContentController extends Controller
 
     public function deleteContent(Request $request)
     {
-        if(!Auth::user()->hasPermission('content_management-delete'))
-        abort(403);
+        if (!Auth::user()->hasPermission('content_management-delete')) {
+            abort(403);
+        }
         // Check if content exist or not
         $is_content_exists =  Content::whereId($request->id)->first();
         if ($is_content_exists == null) {
@@ -394,7 +398,7 @@ class ContentController extends Controller
                 AboutContent::where('content_id', $request->id)->delete();
                 Content::whereId($request->id)->delete();
                 return ['status' => 'success', 'message' => 'About us page content deleted successfully'];
-            } else if ($request->page_type == 'membership') {
+            } elseif ($request->page_type == 'membership') {
                 MembershipContent::where('content_id', $request->id)->update($deleted_data);
                 Content::whereId($request->id)->update($deleted_data);
                 MembershipContent::where('content_id', $request->id)->delete();

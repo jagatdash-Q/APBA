@@ -27,21 +27,19 @@ class ExportSurvey implements FromCollection, WithHeadings, WithEvents
 
         if ($this->survey_list != null) {
             $survey_list = $this->survey_list;
-            if (count($survey_list->getSurveyRegistration)) {
+            if (count($survey_list->getSurveyRegistration) > 0) {
                 foreach ($survey_list->getSurveyRegistration as $survey_report) {
                     $member_type = null;
                     $certificate_status = null;
-                    if ($survey_report->type == 'Guest')
+                    if ($survey_report->type == 'Guest') {
                         $member_type = "Guest";
-                    elseif ($survey_report->type == 'Member')
+                    } elseif ($survey_report->type == 'Member') {
                         $member_type = "Member";
-                    elseif ($survey_report->type == 'Non Member')
+                    } elseif ($survey_report->type == 'Non Member') {
                         $member_type = "Non Member";
+                    }
 
-                    if ($survey_report->certificate_sent == 'no')
-                        $certificate_status = "No";
-                    else
-                        $certificate_status = "Yes";
+                    $certificate_status = $survey_report->certificate_sent == 'no' ? "No" : "Yes";
 
                     $temp_data[] = [
                         $survey_report->fullname, $survey_report->email, $survey_report->organization, $member_type, $survey_report->survey_url, $survey_report->content_material, $survey_report->speaker_knowledge, $survey_report->trainer_presentation, $survey_report->q_a_session, $survey_report->overall_delivery, $survey_report->conference_content, $survey_report->conference_relevant, $survey_report->future_conference, $survey_report->feedback, $certificate_status
@@ -61,24 +59,27 @@ class ExportSurvey implements FromCollection, WithHeadings, WithEvents
             $location = isset($survey_list->getEventOptional->getEvent->event_location) ? $survey_list->getEventOptional->getEvent->event_location : '';
 
             $title = "Event Name: ";
-            if (isset($survey_list->getEventProgram->getEventDetails->event_name))
+            if (isset($survey_list->getEventProgram->getEventDetails->event_name)) {
                 $title .= $survey_list->getEventProgram->getEventDetails->event_name;
-            else
+            } else {
                 $title .= $eventname;
+            }
 
             $title .= "\n Survey Name: ";
             $title .= $survey_list->name;
             $title .= "\n Date: ";
-            if (isset($survey_list->getEventProgram->program_date))
+            if (isset($survey_list->getEventProgram->program_date)) {
                 $title .= Carbon::parse($survey_list->getEventProgram->program_date)->format('d F Y');
-            else
+            } else {
                 $title .= $programdate;
+            }
 
             $title .= "\n Location: ";
-            if (isset($survey_list->getEventProgram->getEventDetails->event_location))
+            if (isset($survey_list->getEventProgram->getEventDetails->event_location)) {
                 $title .= $survey_list->getEventProgram->getEventDetails->event_location;
-            else
+            } else {
                 $title .= $location;
+            }
         } else {
             $title = ' ';
         }

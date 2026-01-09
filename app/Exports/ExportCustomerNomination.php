@@ -33,19 +33,21 @@ class ExportCustomerNomination implements FromCollection, WithHeadings, WithEven
             if (count($customer_nomination) > 0) {
                 foreach ($customer_nomination as $value) {
 
-                    if ($value->getCustomer->current_subscription_status == 'a')
+                    if ($value->getCustomer->current_subscription_status == 'a') {
                         $status = "Active";
-                    elseif ($value->getCustomer->current_subscription_status == 'p')
+                    } elseif ($value->getCustomer->current_subscription_status == 'p') {
                         $status = "Pending";
-                    elseif ($value->getCustomer->current_subscription_status == 'e')
+                    } elseif ($value->getCustomer->current_subscription_status == 'e') {
                         $status = "Expire";
-                    else
+                    } else {
                         $status = "";
+                    }
 
-                    if (isset($value->getCustomer->getActiveSubscriptionDetails))
+                    if (isset($value->getCustomer->getActiveSubscriptionDetails)) {
                         $membership_name = $value->getCustomer->getActiveSubscriptionDetails->membership_name == null ? null : $value->getCustomer->getActiveSubscriptionDetails->membership_name;
-                    else
+                    } else {
                         $membership_name = null;
+                    }
 
 
                     $temp_data[] = [$value->getCustomer->first_name . " " . $value->getCustomer->last_name, $value->getCustomer->email, $value->getCustomer->is_verify_email == '0' ? 'No' : 'Yes', $value->getCustomer->nomination, $membership_name, $status, Carbon::parse($value->getCustomer->active_subscription_expired_on)->format('d F Y')];
@@ -62,23 +64,29 @@ class ExportCustomerNomination implements FromCollection, WithHeadings, WithEven
         if ($check_details != null) {
             $customer_nomination = CustomerNomination::with('getMemberName')->where('nomination_uuid', $check_details->nomination_uuid)->where('nomination_position_uuid', $check_details->position_uuid)->where('member_id', $member_id)->get();
             $title = "Nomination Start & End Date: ";
-            if (isset($check_details->getNomination))
+            if (isset($check_details->getNomination)) {
                 $title .= Carbon::parse($check_details->getNomination->start_date)->format('d F Y');
+            }
             $title .= " to ";
-            if (isset($check_details->getNomination))
+            if (isset($check_details->getNomination)) {
                 $title .= Carbon::parse($check_details->getNomination->end_date)->format('d F Y');
+            }
             $title .= "\n Nomination Name: ";
-            if (isset($check_details->getNomination))
+            if (isset($check_details->getNomination)) {
                 $title .= $check_details->getNomination->name;
+            }
             $title .= "\n Membership Type: ";
-            if (isset($check_details->getPosition))
+            if (isset($check_details->getPosition)) {
                 $title .= $check_details->getPosition->getMembershipType->membership_type;
+            }
             $title .= "\n Position: ";
-            if (isset($check_details->getPosition))
+            if (isset($check_details->getPosition)) {
                 $title .= $check_details->getPosition->membership_position;
+            }
             $title .= "\n Member Name: ";
-            if (count($customer_nomination))
+            if (count($customer_nomination) > 0) {
                 $title .= $customer_nomination[0]->getMemberName->user_name;
+            }
         } else {
             $title = ' ';
         }

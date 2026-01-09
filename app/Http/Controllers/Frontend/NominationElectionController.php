@@ -31,23 +31,19 @@ class NominationElectionController extends Controller
         $nomination_details = [];
         $temp_type = null;
         $nomination = Nomination::with('getNominationPosition')->whereDate('start_date', '<=', Carbon::now()->format('Y-m-d'))->whereDate('end_date', '>=', Carbon::now()->format('Y-m-d'))->orderBy('id', 'desc')->where('status', '1')->first();
-        if ($nomination != null) {
-            if (isset($nomination->getNominationPosition)) {
-                if (count($nomination->getNominationPosition)) {
-                    $count = 0;
-                    foreach ($nomination->getNominationPosition as $position) {
-                        if (isset($position->getPosition)) {
-                            if (isset($position->getPosition->getMembershipType)) {
-                                $membership_type_uuid = $position->getPosition->getMembershipType->uuid;
-                                if ($temp_type == null || $temp_type != $membership_type_uuid) {
-                                    $count = 0;
-                                    $temp_type = $membership_type_uuid;
-                                    $nomination_details[$membership_type_uuid][] = $position;
-                                } elseif ($temp_type == $membership_type_uuid) {
-                                    $count++;
-                                    $nomination_details[$membership_type_uuid][] = $position;
-                                }
-                            }
+        if ($nomination != null && isset($nomination->getNominationPosition)) {
+            if (count($nomination->getNominationPosition) > 0) {
+                $count = 0;
+                foreach ($nomination->getNominationPosition as $position) {
+                    if (isset($position->getPosition) && isset($position->getPosition->getMembershipType)) {
+                        $membership_type_uuid = $position->getPosition->getMembershipType->uuid;
+                        if ($temp_type == null || $temp_type != $membership_type_uuid) {
+                            $count = 0;
+                            $temp_type = $membership_type_uuid;
+                            $nomination_details[$membership_type_uuid][] = $position;
+                        } elseif ($temp_type == $membership_type_uuid) {
+                            $count++;
+                            $nomination_details[$membership_type_uuid][] = $position;
                         }
                     }
                 }
@@ -59,10 +55,7 @@ class NominationElectionController extends Controller
                 if (count($position)) {
                     foreach ($position as $value) {
                         $get_nominate = CustomerNomination::with('getMemberName')->where('customer_id', Auth::guard('customer')->user()->id)->where('nomination_uuid', $value->nomination_uuid)->where('nomination_position_uuid', $value->position_uuid)->first();
-                        if ($get_nominate == null)
-                            $value->nominated_member = null;
-                        else
-                            $value->nominated_member = $get_nominate->getMemberName->user_name;
+                        $value->nominated_member = $get_nominate == null ? null : $get_nominate->getMemberName->user_name;
                     }
                 }
             }
@@ -101,13 +94,13 @@ class NominationElectionController extends Controller
             }
             $ids = $data->pluck('id')->toArray();
             $all_customer_for_nomintion = Customer::whereIn('id', $ids)->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')->paginate(10);
-            return view('frontend.customer.nomination.nomination_members', compact('all_customer_for_nomintion'));
+            return view('frontend.customer.nomination.nomination_members', ['all_customer_for_nomintion' => $all_customer_for_nomintion]);
         }
 
         $all_customer_for_nomintion = [];
         $nomination_content = NominationContent::first();
 
-        return view('frontend.customer.nomination.nomination', compact('nomination_details', 'all_customer_for_nomintion', 'membership_type', 'nomination_content'));
+        return view('frontend.customer.nomination.nomination', ['nomination_details' => $nomination_details, 'all_customer_for_nomintion' => $all_customer_for_nomintion, 'membership_type' => $membership_type, 'nomination_content' => $nomination_content]);
     }
 
     // public function nomination(Request $request)
@@ -205,8 +198,9 @@ class NominationElectionController extends Controller
                 }
                 $check_nomination = CustomerNomination::where('customer_id', Auth::guard('customer')->user()->id)->where('nomination_uuid', $request->nomination_uuid)->where('nomination_position_uuid', $request->position_uuid)->count();
 
-                if ($check_nomination != 0)
+                if ($check_nomination != 0) {
                     return ['warning', "You have nominate only one persion for only one position."];
+                }
 
                 $nominate_by_customer = new CustomerNomination();
                 $nominate_by_customer->customer_id = Auth::guard('customer')->user()->id;
@@ -219,6 +213,7 @@ class NominationElectionController extends Controller
                 return ['error', "Something went wrong! Please try again later."];
             }
         }
+        return null;
     }
 
     // Election module
@@ -239,24 +234,20 @@ class NominationElectionController extends Controller
             $query->where('customer_id', Auth::guard('customer')->id());
         }, 'getNominationDetails'])->whereDate('start_date', '<=', Carbon::now()->format('Y-m-d'))->whereDate('end_date', '>=', Carbon::now()->format('Y-m-d'))->orderBy('id', 'desc')->where('status', '1')->first();
 
-        if ($election_details != null) {
-            if (isset($election_details->getVotingPositions)) {
-                if (count($election_details->getVotingPositions)) {
-                    $count = 0;
-                    foreach ($election_details->getVotingPositions as $position) {
-                        if (isset($position->getNominationPositionDetails)) {
-                            if (isset($position->getNominationPositionDetails->getPosition)) {
-                                if (isset($position->getNominationPositionDetails->getPosition->getMembershipType)) {
-                                    $membership_type_uuid = $position->getNominationPositionDetails->getPosition->getMembershipType->uuid;
-                                    if ($temp_type == null || $temp_type != $membership_type_uuid) {
-                                        $count = 0;
-                                        $temp_type = $membership_type_uuid;
-                                        $elections[$membership_type_uuid][] = $position;
-                                    } elseif ($temp_type == $membership_type_uuid) {
-                                        $count++;
-                                        $elections[$membership_type_uuid][] = $position;
-                                    }
-                                }
+        if ($election_details != null && isset($election_details->getVotingPositions)) {
+            if (count($election_details->getVotingPositions) > 0) {
+                $count = 0;
+                foreach ($election_details->getVotingPositions as $position) {
+                    if (isset($position->getNominationPositionDetails) && isset($position->getNominationPositionDetails->getPosition)) {
+                        if (isset($position->getNominationPositionDetails->getPosition->getMembershipType)) {
+                            $membership_type_uuid = $position->getNominationPositionDetails->getPosition->getMembershipType->uuid;
+                            if ($temp_type == null || $temp_type != $membership_type_uuid) {
+                                $count = 0;
+                                $temp_type = $membership_type_uuid;
+                                $elections[$membership_type_uuid][] = $position;
+                            } elseif ($temp_type == $membership_type_uuid) {
+                                $count++;
+                                $elections[$membership_type_uuid][] = $position;
                             }
                         }
                     }
@@ -265,7 +256,7 @@ class NominationElectionController extends Controller
         }
         $membership_type = MembershipType::pluck('membership_type', 'uuid')->toArray();
 
-        return view('frontend.customer.election.voting', compact('elections', 'customer_for_voting', 'election_content', 'membership_type','election_details'));
+        return view('frontend.customer.election.voting', ['elections' => $elections, 'customer_for_voting' => $customer_for_voting, 'election_content' => $election_content, 'membership_type' => $membership_type, 'election_details' => $election_details]);
     }
 
 
@@ -276,12 +267,14 @@ class NominationElectionController extends Controller
         $accepted_list = NominationAcceptList::where('nomination_uuid', $request->nomination_uuid)->where('nomination_position_uuid', $request->position_uuid)->get('member_id');
         $customer_for_voting = $customer_for_voting->whereIn('id', $accepted_list);
 
-        if ($request->search != null)
+        if ($request->search != null) {
             $customer_for_voting = $customer_for_voting->where('user_name', 'like', '%' . $request->search . '%');
-        if ($request->order != null)
+        }
+        if ($request->order != null) {
             $customer_for_voting = $customer_for_voting->orderBy('user_name', $request->order);
+        }
         $customer_for_voting = $customer_for_voting->paginate(3);
-        return view('frontend.customer.election.election_members', compact('customer_for_voting'));
+        return view('frontend.customer.election.election_members', ['customer_for_voting' => $customer_for_voting]);
     }
 
     public function electVote(Request $request)

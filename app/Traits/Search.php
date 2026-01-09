@@ -15,7 +15,7 @@ trait Search
 {
 
 
-    public function getSuggestions($query, $search_models = [], $main_datasets)
+    public function getSuggestions($query, $search_models = [], $main_datasets = null)
     {
         $indexer = new TNTIndexer;
         $trigrams = $indexer->buildTrigrams($query);
@@ -23,7 +23,7 @@ trait Search
         $blog_lists = $careers = $career_lists = $medias = $trainings = $sitepages = $our_teams_listing =  [];
 
         if (count($search_models) > 0) {
-            foreach ($search_models as $index => $search_key) {
+            foreach ($search_models as $search_key) {
                 switch ($search_key) {
                     case 'blog_listing':
                         $blog_lists =  BlogListing::search($trigrams)->get();
@@ -95,12 +95,7 @@ trait Search
             $meta_title_distance = levenshtein($query, $module->meta_title);
             $meta_keywoard_distance = levenshtein($query, $module->meta_keywoard);
             $meta_description_distance = levenshtein($query, $module->meta_description);
-
-
-            if ($module->distance < 4 || $page_slug_distance < 4 || $meta_title_distance < 4 || $meta_keywoard_distance < 4 || $meta_description_distance < 4) {
-                return true;
-            }
-            return false;
+            return $module->distance < 4 || $page_slug_distance < 4 || $meta_title_distance < 4 || $meta_keywoard_distance < 4 || $meta_description_distance < 4;
         });
 
         $sorted = $suggestions->sort(function ($a, $b) {
@@ -138,16 +133,17 @@ trait Search
     function array_search_partial($arr, $keyword)
     {
         foreach ($arr as $index => $string) {
-            if (strpos($string, $keyword) !== FALSE)
+            if (strpos($string, $keyword) !== FALSE) {
                 return $index;
+            }
         }
     }
 
-    public function allExactMatches($query, $results, $inDataSet = [], $page_type)
+    public function allExactMatches($query, $results, $inDataSet = [], $page_type = null)
     {
 
         $final_array = [];
-        foreach ($results as $key => $result) {
+        foreach ($results as $result) {
             $elem1  = false;
             if (in_array($page_type, ['Sitepage', 'training', 'media'])) {
                 $elem1 = in_array($result->content_id, $inDataSet);
@@ -155,7 +151,7 @@ trait Search
             if (in_array($page_type, ['career', 'career_listing'])) {
                 $elem1 = in_array($result->career_uid, $inDataSet);
             }
-            if (in_array($page_type, ['blog'])) {
+            if ($page_type == 'blog') {
                 $elem1 = in_array($result->blog_uid, $inDataSet);
             }
 
@@ -164,55 +160,59 @@ trait Search
             //     array_push($final_array, $result);
             switch ($page_type) {
                 case 'Sitepage':
-                    if ($this->array_search_partial(array('page_name' => $result->page_name, 'page_slug' => $result->page_slug, 'meta_title' => $result->meta_title, 'meta_keywoard' => $result->meta_keywoard, 'meta_description' => $result->meta_description, 'page_title' => $result->page_title, 'content_description' => $result->content_description), $query) && $elem1)
-                        array_push($final_array, $result);
+                    if ($this->array_search_partial(array('page_name' => $result->page_name, 'page_slug' => $result->page_slug, 'meta_title' => $result->meta_title, 'meta_keywoard' => $result->meta_keywoard, 'meta_description' => $result->meta_description, 'page_title' => $result->page_title, 'content_description' => $result->content_description), $query) && $elem1) {
+                        $final_array[] = $result;
+                    }
                     break;
 
 
                 case 'training':
-                    if ($this->array_search_partial(array('page_name' => $result->page_name, 'page_slug' => $result->page_slug, 'meta_title' => $result->meta_title, 'meta_keywoard' => $result->meta_keywoard, 'meta_description' => $result->meta_description), $query) && $elem1)
-                        array_push($final_array, $result);
-                    break;
 
                 case 'media':
-                    if ($this->array_search_partial(array('page_name' => $result->page_name, 'page_slug' => $result->page_slug, 'meta_title' => $result->meta_title, 'meta_keywoard' => $result->meta_keywoard, 'meta_description' => $result->meta_description), $query) && $elem1)
-                        array_push($final_array, $result);
+                    if ($this->array_search_partial(array('page_name' => $result->page_name, 'page_slug' => $result->page_slug, 'meta_title' => $result->meta_title, 'meta_keywoard' => $result->meta_keywoard, 'meta_description' => $result->meta_description), $query) && $elem1) {
+                        $final_array[] = $result;
+                    }
                     break;
 
                 case 'career_listing':
-                    if ($this->array_search_partial(array('page_name' => $result->page_name, 'page_slug' => $result->page_slug, 'meta_title' => $result->meta_title, 'meta_keywoard' => $result->meta_keywoard, 'meta_description' => $result->meta_description, 'title' => $result->title,  'job_desc_body' => $result->job_desc_body, 'excerpt_desc' => $result->excerpt_desc), $query) && $elem1)
-                        array_push($final_array, $result);
+                    if ($this->array_search_partial(array('page_name' => $result->page_name, 'page_slug' => $result->page_slug, 'meta_title' => $result->meta_title, 'meta_keywoard' => $result->meta_keywoard, 'meta_description' => $result->meta_description, 'title' => $result->title,  'job_desc_body' => $result->job_desc_body, 'excerpt_desc' => $result->excerpt_desc), $query) && $elem1) {
+                        $final_array[] = $result;
+                    }
                     break;
                 case 'career':
-                    if ($this->array_search_partial(array('page_name' => $result->page_name, 'page_slug' => $result->page_slug, 'meta_title' => $result->meta_title, 'meta_keywoard' => $result->meta_keywoard, 'meta_description' => $result->meta_description, 'title' => $result->title, 'desc' => $result->desc, 'owe_title' => $result->owe_title, 'co_title' => $result->co_title, 'co_desc' => $result->co_desc), $query) && $elem1)
-                        array_push($final_array, $result);
+                    if ($this->array_search_partial(array('page_name' => $result->page_name, 'page_slug' => $result->page_slug, 'meta_title' => $result->meta_title, 'meta_keywoard' => $result->meta_keywoard, 'meta_description' => $result->meta_description, 'title' => $result->title, 'desc' => $result->desc, 'owe_title' => $result->owe_title, 'co_title' => $result->co_title, 'co_desc' => $result->co_desc), $query) && $elem1) {
+                        $final_array[] = $result;
+                    }
                     break;
 
                 case 'blog':
-                    if ($this->array_search_partial(array('page_name' => $result->page_name, 'page_slug' => $result->page_slug, 'meta_title' => $result->meta_title, 'meta_keywoard' => $result->meta_keywoard, 'meta_description' => $result->meta_description, 'title' => $result->title, 'body' => $result->body), $query) && $elem1)
-                        array_push($final_array, $result);
+                    if ($this->array_search_partial(array('page_name' => $result->page_name, 'page_slug' => $result->page_slug, 'meta_title' => $result->meta_title, 'meta_keywoard' => $result->meta_keywoard, 'meta_description' => $result->meta_description, 'title' => $result->title, 'body' => $result->body), $query) && $elem1) {
+                        $final_array[] = $result;
+                    }
                     break;
             }
         }
         return $final_array;
     }
 
-    public function filterDataSetByConditions($results, $inDataSet = [], $page_type)
+    public function filterDataSetByConditions($results, $inDataSet = [], $page_type = null)
     {
         $final_array = [];
-        foreach ($results as $key => $result) {
+        foreach ($results as $result) {
             $elem1  = false;
             if (in_array($page_type, ['Sitepage', 'training', 'media','about_us_ids'])) {
                 $elem1 = in_array($result->content_id, $inDataSet);
-            } else if (in_array($page_type, ['career', 'career_listing'])) {
+            } elseif (in_array($page_type, ['career', 'career_listing'])) {
                 $elem1 = in_array($result->career_uid, $inDataSet);
-            } else if (in_array($page_type, ['blog'])) {
+            } elseif ($page_type == 'blog') {
                 $elem1 = in_array($result->blog_uid, $inDataSet);
-            } else if (in_array($page_type, ['our_teams_listing'])) {
+            } elseif ($page_type == 'our_teams_listing') {
                 $elem1 = in_array($result->uid, $inDataSet);
             }
 
-            if ($elem1) array_push($final_array, $result);
+            if ($elem1) {
+                $final_array[] = $result;
+            }
         }
         return $final_array;
     }

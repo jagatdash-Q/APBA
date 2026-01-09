@@ -13,7 +13,7 @@ class WebSettingPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -21,7 +21,7 @@ class WebSettingPolicy
      */
     public function view(User $user, WebSetting $webSetting): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -29,7 +29,7 @@ class WebSettingPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -37,7 +37,7 @@ class WebSettingPolicy
      */
     public function update(User $user, WebSetting $webSetting): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -45,7 +45,7 @@ class WebSettingPolicy
      */
     public function delete(User $user, WebSetting $webSetting): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -53,7 +53,7 @@ class WebSettingPolicy
      */
     public function restore(User $user, WebSetting $webSetting): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class WebSettingPolicy
      */
     public function forceDelete(User $user, WebSetting $webSetting): bool
     {
-        //
+        return false;
     }
 }

@@ -32,10 +32,11 @@ class OurTeamCategoryController extends Controller
      */
     public function index()
     {
-        if (!Auth::user()->hasPermission('our_team-read'))
+        if (!Auth::user()->hasPermission('our_team-read')) {
             abort(403);
+        }
         $OurTeamCategoryLists = OurTeamCategory::orderby('id', 'asc')->with('userDetails', 'ourTeamCatContent')->paginate(10);
-        return view('dashboard.our_teams.category.list', compact("OurTeamCategoryLists"));
+        return view('dashboard.our_teams.category.list', ['OurTeamCategoryLists' => $OurTeamCategoryLists]);
     }
 
     /**
@@ -45,21 +46,22 @@ class OurTeamCategoryController extends Controller
      */
     public function create()
     {
-        if (!Auth::user()->hasPermission('our_team-create'))
+        if (!Auth::user()->hasPermission('our_team-create')) {
             abort(403);
+        }
         return view('dashboard.our_teams.category.create');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-create'))
+        if (!Auth::user()->hasPermission('our_team-create')) {
             abort(403);
+        }
         $validator = Validator::make($request->all(), [
             'title' => 'required',
         ]);
@@ -98,11 +100,12 @@ class OurTeamCategoryController extends Controller
      */
     public function edit(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-update'))
+        if (!Auth::user()->hasPermission('our_team-update')) {
             abort(403);
+        }
         $our_team_content = OurTeamCategory::where('uid', $request->uid)->with('ourTeamCatContent')->first();
         if ($our_team_content != null) {
-            return view('dashboard.our_teams.category.edit', compact("our_team_content"));
+            return view('dashboard.our_teams.category.edit', ['our_team_content' => $our_team_content]);
         } else {
             abort(404);
         }
@@ -111,14 +114,13 @@ class OurTeamCategoryController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\OurTeamCategory  $blogCategory
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, OurTeamCategory $blogCategory)
     {
-        if (!Auth::user()->hasPermission('our_team-update'))
+        if (!Auth::user()->hasPermission('our_team-update')) {
             abort(403);
+        }
         $validator = Validator::make($request->all(), [
             'title' => 'required',
         ]);
@@ -135,7 +137,7 @@ class OurTeamCategoryController extends Controller
         $our_team_category_details = OurTeamCategory::where('uid', $request->uid)->update($our_team_category);
 
         // Remove existing category contents
-        $deleted_category_content = OurTeamCategoryContent::where('category_uid', $request->uid)->delete();
+        OurTeamCategoryContent::where('category_uid', $request->uid)->delete();
         if ($our_team_category_details == 1) {
             $our_team_category_content = [];
             $our_team_category_content['uid'] = Str::uuid()->toString();
@@ -160,8 +162,9 @@ class OurTeamCategoryController extends Controller
      */
     public function destroy(Request $request)
     {
-        if (!Auth::user()->hasPermission('our_team-delete'))
+        if (!Auth::user()->hasPermission('our_team-delete')) {
             abort(403);
+        }
         if ($request->uid == null || $request->uid == '') {
             return ['status' => 'error', 'message' => 'Invalid details'];
         }

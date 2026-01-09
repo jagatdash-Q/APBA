@@ -31,7 +31,7 @@ class HomeController extends Controller
             //...
         ];
 
-        return view('dashboard.home', compact('widget'));
+        return view('dashboard.home', ['widget' => $widget]);
     }
 
 }

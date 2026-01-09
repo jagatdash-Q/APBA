@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @property string|null $start_date
+ * @property string|null $end_date
+ */
 class Event extends Model
 {
     use HasFactory;

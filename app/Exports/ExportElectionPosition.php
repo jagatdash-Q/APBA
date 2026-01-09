@@ -28,16 +28,13 @@ class ExportElectionPosition implements FromCollection, WithHeadings, WithEvents
         $total_customer = Customer::whereHas('getActiveSubscriptionDetails', function ($query) {
             $query->where('membership_name', 'not like', '%Corporate%');
         })->where('current_subscription_status', 'a')->where('nomination', 'yes')->count();
-        if (count($customer_votings)) {
+        if (count($customer_votings) > 0) {
             foreach ($customer_votings as $val) {
                 $customer_election_details = CustomerVoting::with('getVotedMemberDetails')->where('voting_position_uuid', $uuid)->where('member_id', $val)->first();
                 $customer_election_details_count = CustomerVoting::with('getVotedMemberDetails')->where('voting_position_uuid', $uuid)->where('member_id', $val)->count();
-                if ($customer_election_details != null) {
-                    if ($customer_election_details->getVotedMemberDetails != null) {
-                        $total_vote_percentage = (($customer_election_details_count / $total_customer) * 100);
-
-                        $temp_data[] = [$customer_election_details->getVotedMemberDetails->user_name, $customer_election_details_count, number_format(floatval($total_vote_percentage), 2, '.', '')];
-                    }
+                if ($customer_election_details != null && $customer_election_details->getVotedMemberDetails != null) {
+                    $total_vote_percentage = (($customer_election_details_count / $total_customer) * 100);
+                    $temp_data[] = [$customer_election_details->getVotedMemberDetails->user_name, $customer_election_details_count, number_format(floatval($total_vote_percentage), 2, '.', '')];
                 }
             }
         }
@@ -49,25 +46,29 @@ class ExportElectionPosition implements FromCollection, WithHeadings, WithEvents
         $position_details = CustomerVoting::where('voting_position_uuid', $uuid)->with(['getVotingDetails', 'getVotingPositionDetails', 'getNominationDetails'])->first();
         if ($position_details != null) {
             $title = "Election Start & End Date: ";
-            if (isset($position_details->getVotingDetails))
+            if (isset($position_details->getVotingDetails)) {
                 $title .= Carbon::parse($position_details->getVotingDetails->start_date)->format('d F Y');
+            }
             $title .= " to ";
-            if (isset($position_details->getVotingDetails))
+            if (isset($position_details->getVotingDetails)) {
                 $title .= Carbon::parse($position_details->getVotingDetails->end_date)->format('d F Y');
+            }
             $title .= "\n Nomination Name: ";
-            if (isset($position_details->getNominationDetails))
+            if (isset($position_details->getNominationDetails)) {
                 $title .= $position_details->getNominationDetails->name;
+            }
             $title .= "\n Membership Type: ";
-            if (isset($position_details->getVotingPositionDetails))
-                if (isset($position_details->getVotingPositionDetails->getNominationPositionDetails))
-                    if (isset($position_details->getVotingPositionDetails->getNominationPositionDetails->getPosition))
-                        if (isset($position_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->getMembershipType))
-                            $title .= $position_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->getMembershipType->membership_type;
+            if (isset($position_details->getVotingPositionDetails) && isset($position_details->getVotingPositionDetails->getNominationPositionDetails)) {
+                if (isset($position_details->getVotingPositionDetails->getNominationPositionDetails->getPosition) && isset($position_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->getMembershipType)) {
+                    $title .= $position_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->getMembershipType->membership_type;
+                }
+            }
             $title .= "\n Position: ";
-            if ($position_details->getVotingPositionDetails != null)
-                if ($position_details->getVotingPositionDetails->getNominationPositionDetails != null)
-                    if ($position_details->getVotingPositionDetails->getNominationPositionDetails->getPosition != null)
-                        $title .= $position_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->membership_position;
+            if ($position_details->getVotingPositionDetails != null && $position_details->getVotingPositionDetails->getNominationPositionDetails != null) {
+                if ($position_details->getVotingPositionDetails->getNominationPositionDetails->getPosition != null) {
+                    $title .= $position_details->getVotingPositionDetails->getNominationPositionDetails->getPosition->membership_position;
+                }
+            }
         } else {
             $title = ' ';
         }

@@ -31,7 +31,7 @@ class CheckEventRegistration extends Command
     public function handle()
     {
         $event_reg = EventRegistration::with(['getEventDetails', 'getEventProgram', 'getEventRegistrationOptional'])->get();
-        if (count($event_reg)) {
+        if (count($event_reg) > 0) {
             foreach ($event_reg as $event) {
                 if ($event->payment_status == 'success') {
                     $nomination_reminder_mail = EventRegistrationReminder::where('event_reg_uuid', $event->uuid)->where('mail_sent_for', $event->payment_status)->count();
